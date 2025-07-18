@@ -103,7 +103,7 @@ entries:
       Ideal for developing cloud native applications.
     digest: 2c4417711a6f3a3834b49a4d7fd69de1ee95538836d233669ccbf4ded1fc9a96
     home: https://bitnami.com
-    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Database-postgres.svg/1448px-Database-postgres.svg.png
+    icon: https://w7.pngwing.com/pngs/956/695/png-transparent-mongodb-original-wordmark-logo-icon-thumbnail.png
     keywords:
     - mongodb
     - database
@@ -145,7 +145,7 @@ entries:
       keys, joins, views, triggers and stored procedures.
     digest: 6537de714df16f71c720921bd0ad8fad90bb01525fb3aacff3503781de3f9f8b
     home: https://bitnami.com
-    icon: https://bitnami.com/assets/stacks/postgresql/img/postgresql-stack-220x234.png
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Database-postgres.svg/1448px-Database-postgres.svg.png
     keywords:
     - postgresql
     - postgres
