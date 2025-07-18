@@ -1,0 +1,44 @@
+global: 
+  librechat:
+    existingSecretApiKey: OPENAI_API_KEY
+    existingSecretName: librechat-credentials-env
+image:
+  pullPolicy: IfNotPresent
+  registry: ghcr.io
+  repository: danny-avila/librechat-rag-api-dev-lite
+  tag: latest
+imagePullSecrets: []
+nameOverride: ''
+nodeSelector: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+postgresql:
+  auth:
+    database: librechat-vectordb
+    username: postgres
+    password: postgres 
+rag:
+  configEnv:
+    DB_PORT: '5432'
+    EMBEDDINGS_PROVIDER: openai
+  enabled: true
+  existingSecret: ''
+resources: {}
+securityContext: {}
+service:
+  annotations: {}
+  port: 8000
+  type: ClusterIP
+serviceAccount:
+  annotations: {}
+  create: true
+  name: 'librechat-sa'
+tolerations: []
+volumeMounts:
+  - name: librechat-uploads
+    mountPath: /uploads/
+volumes: 
+  - name: librechat-uploads
+    persistentVolumeClaim: 
+      claimName: librechat-rag-api-data 

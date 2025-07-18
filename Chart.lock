@@ -1,0 +1,15 @@
+dependencies:
+- name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 15.5.38
+- name: mongodb
+  repository: https://charts.bitnami.com/bitnami
+  version: 16.3.0
+- name: meilisearch
+  repository: file://./meilisearch
+  version: 0.7.0
+- name: librechat-rag-api
+  repository: file://./librechat-rag-api
+  version: 0.5.1
+digest: sha256:f366bf4f3cf137ec87358700bc64f3a81f9569324692d4ac5923c720f5ba7da7
+generated: "2025-07-18T14:58:09.766747017-03:00"

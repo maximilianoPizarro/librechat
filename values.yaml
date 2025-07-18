@@ -1,0 +1,176 @@
+global:
+  librechat:
+    existingSecretApiKey: OPENAI_API_KEY
+    existingSecretName: librechat-credentials-env
+image:
+  pullPolicy: IfNotPresent
+  registry: ghcr.io
+  repository: danny-avila/librechat
+  tag: ''
+imagePullSecrets: []
+
+route:
+  enabled: true  
+  host: librechat.openshiftapps.com
+
+ingress:
+  annotations: {}
+  className: ''
+  enabled: false
+  hosts:
+    - host: librechat.openshiftapps.com
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+librechat:
+  configEnv:
+    CREDS_IV: 118a16ffe26a8712d0adb5b3cf8229ca
+    CREDS_KEY: 99f12ba0ea72257aa78df8e99c9be801716a7e16fe77e7510a914112528aa05c
+    DEBUG_PLUGINS: 'true'
+    JWT_REFREcdSH_SECRET: 8a447c316c171f5df8e304c085187b6d10e4eeef5174137d4ad4d2cdd956f5e7
+    JWT_SECRET: 83096493d70e22561f84191c24f459d72e9b41f4c8657fe43aae8cb9b0fe1fa4
+    PLUGIN_MODELS: >-
+      gpt-4,gpt-4-turbo-preview,gpt-4-0125-preview,gpt-4-1106-preview,gpt-4-0613,gpt-3.5-turbo,gpt-3.5-turbo-0125,gpt-3.5-turbo-1106,gpt-3.5-turbo-0613,llama-3-1-8b-instruct
+  configYamlContent: |
+    version: 1.0.3
+    cache: true
+    # fileStrategy: "firebase"  # If using Firebase CDN
+    fileConfig:
+      endpoints:
+        assistants:
+          fileLimit: 5
+          fileSizeLimit: 10  # Maximum size for an individual file in MB
+          totalSizeLimit: 50  # Maximum total size for all files in a single request in MB
+          supportedMimeTypes:
+            - "image/.*"
+            - "application/pdf"
+        openAI:
+          disabled: true  # Disables file uploading to the OpenAI endpoint
+        default:
+          totalSizeLimit: 20
+        YourCustomEndpointName:
+          fileLimit: 2
+          fileSizeLimit: 5
+      serverFileSizeLimit: 100  # Global server file size limit in MB
+      avatarSizeLimit: 2  # Limit for user avatar image size in MB
+    rateLimits:
+      fileUploads:
+        ipMax: 100
+        ipWindowInMinutes: 60  # Rate limit window for file uploads per IP
+        userMax: 50
+        userWindowInMinutes: 60  # Rate limit window for file uploads per user
+    #registration:
+    #  socialLogins: ["google", "facebook", "github", "discord", "openid"]
+    #  allowedDomains:
+    #    - "*"
+    #    - ".apps.cluster-26wbn.26wbn.sandbox691.opentlc.com"
+    endpoints:
+      assistants:
+        disableBuilder: false # Disable Assistants Builder Interface by setting to `true`
+        pollIntervalMs: 750  # Polling interval for checking assistant updates
+        timeoutMs: 180000  # Timeout for assistant operations
+        # Should only be one or the other, either `supportedIds` or `excludedIds`
+        supportedIds: ["asst_supportedAssistantId1", "asst_supportedAssistantId2"]
+        # excludedIds: ["asst_excludedAssistantId"]
+      custom:
+        - name: "OpenRouter"
+          apiKey: "${OPENAI_API_KEY}"
+          baseURL: "https://localhost:8080"
+          models:
+            default: ["ollama/llama-3-1-8b-instruct"]
+            fetch: true
+          titleConvo: true
+          titleModel: "llama-3-1-8b-instruct"
+          summarize: false
+          summaryModel: "llama-3-1-8b-instruct"
+          forcePrompt: false
+          modelDisplayLabel: "OpenRouter"
+  
+  existingConfigYaml: ''
+  existingSecretName: librechat-credentials-env
+  serviceAccountName: librechat-sa
+  imageVolume:
+    accessModes: ReadWriteOnce
+    enabled: true
+    size: 10G
+librechat-rag-api:
+  embeddingsProvider: openai
+  enabled: true
+endpoints:
+  custom:
+    # OpenRouter.ai
+    - name: "OpenRouter"
+      apiKey: "${OPENAI_API_KEY}"
+      baseURL: "https://localhost"
+      models:
+        default: ["ollama/llama-3-1-8b-instruct"]
+        fetch: true
+      titleConvo: true
+      titleModel: "llama-3-1-8b-instruct"
+      summarize: false
+      summaryModel: "llama-3-1-8b-instruct"
+      forcePrompt: false
+      modelDisplayLabel: "OpenRouter"
+lifecycle: {}
+meilisearch:
+  auth:
+    existingMasterKeySecret: librechat-credentials-env
+  enabled: true
+  image:
+    tag: v1.7.3
+  persistence:
+    enabled: true
+    storageClass: 'gp3-csi'
+  serviceAccountName: librechat-meilisearch-sa
+postgresql:
+  auth:
+    database: librechat-vectordb
+    username: postgres
+    password: postgres 
+  enabled: true
+  image:
+    registry: ghcr.io
+    repository: bat-bs/bitnami-pgvector
+    tag: pg16
+
+  primary:
+    initdb:
+      scripts:
+        create-librechat-db.sql: |
+          -- Ensure the database exists
+          CREATE DATABASE "librechat-vectordb" WITH OWNER postgres;
+
+          -- Connect to the new database and create the pgvector extension
+          \c librechat-vectordb
+          CREATE EXTENSION IF NOT EXISTS vector;
+          
+          -- CREATE USER postgres WITH PASSWORD 'postgres';
+          -- GRANT ALL PRIVILEGES ON DATABASE "librechat-vectordb" TO postgres;
+mongodb:
+  auth:
+    enabled: false
+  databases:
+    - LibreChat
+  enabled: true
+nameOverride: ''
+nodeSelector: {}
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+replicaCount: 1
+resources: {}
+securityContext: {}
+service:
+  annotations: {}
+  port: 3080
+  type: ClusterIP
+tolerations: []
+updateStrategy:
+  type: RollingUpdate
+volumeMounts:
+  - name: librechat-logs-volume
+    mountPath: /app/api/logs
+volumes: 
+  - name: librechat-logs-volume
+    emptyDir: {}
