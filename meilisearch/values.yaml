@@ -53,7 +53,7 @@ serviceAccount:
   # the one created by this chart.
   # Set create to false to prevent creating a service account and use your own.
   # -- Should this chart create a service account
-  create: true
+  create: false
   # -- Custom service account name, if not created by this chart
   name: ""
   # -- Additional annotations for created service account
