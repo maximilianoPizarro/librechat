@@ -103,7 +103,7 @@ entries:
       Ideal for developing cloud native applications.
     digest: 2c4417711a6f3a3834b49a4d7fd69de1ee95538836d233669ccbf4ded1fc9a96
     home: https://bitnami.com
-    icon: https://bitnami.com/assets/stacks/mongodb/img/mongodb-stack-220x234.png
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Database-postgres.svg/1448px-Database-postgres.svg.png
     keywords:
     - mongodb
     - database
