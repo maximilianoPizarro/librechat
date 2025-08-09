@@ -41,6 +41,7 @@ app.kubernetes.io/component: search-engine
 app.kubernetes.io/part-of: {{ template "meilisearch.name" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 app.openshift.io/runtime: rust
+app: librechat
 {{- if .Values.customLabels }}
 {{ toYaml .Values.customLabels }}
 {{- end }}

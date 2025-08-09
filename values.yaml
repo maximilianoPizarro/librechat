@@ -1,12 +1,12 @@
 global:
   librechat:
     existingSecretApiKey: OPENAI_API_KEY
-    existingSecretName: librechat-credentials-env
+    existingSecretName: credentials-env
 image:
   pullPolicy: IfNotPresent
   registry: ghcr.io
   repository: danny-avila/librechat
-  tag: ''
+  tag: 'v0.8.0-rc1'
 imagePullSecrets: []
 
 route:
@@ -25,6 +25,8 @@ ingress:
   tls: []
 librechat:
   configEnv:
+    OPENAI_API_KEY: IiI=
+    RAG_API_URL: aHR0cDovL2xpYnJlY2hhdC1saWJyZWNoYXQtcmFnLWFwaTo4MDAw
     CREDS_IV: 118a16ffe26a8712d0adb5b3cf8229ca
     CREDS_KEY: 99f12ba0ea72257aa78df8e99c9be801716a7e16fe77e7510a914112528aa05c
     DEBUG_PLUGINS: 'true'
@@ -74,21 +76,19 @@ librechat:
         supportedIds: ["asst_supportedAssistantId1", "asst_supportedAssistantId2"]
         # excludedIds: ["asst_excludedAssistantId"]
       custom:
-        - name: "OpenRouter"
+        - name: "Ollama"
           apiKey: "${OPENAI_API_KEY}"
-          baseURL: "https://localhost:8080"
+          baseURL: "http://librechat-ollama:11434/v1" # Adjust if Ollama is on a different host
           models:
-            default: ["ollama/llama-3-1-8b-instruct"]
+            default: ["llama2"] # Example models, fetch from your Ollama instance
             fetch: true
           titleConvo: true
-          titleModel: "llama-3-1-8b-instruct"
+          titleModel: "llama2"
           summarize: false
-          summaryModel: "llama-3-1-8b-instruct"
-          forcePrompt: false
-          modelDisplayLabel: "OpenRouter"
+          summaryModel: "llama2"
   
   existingConfigYaml: ''
-  existingSecretName: librechat-credentials-env
+  existingSecretName: credentials-env
   serviceAccountName: librechat-sa
   imageVolume:
     accessModes: ReadWriteOnce
@@ -100,22 +100,20 @@ librechat-rag-api:
 endpoints:
   custom:
     # OpenRouter.ai
-    - name: "OpenRouter"
+    - name: "Ollama"
       apiKey: "${OPENAI_API_KEY}"
-      baseURL: "https://localhost"
+      baseURL: "http://librechat-ollama:11434/v1" # Adjust if Ollama is on a different host
       models:
-        default: ["ollama/llama-3-1-8b-instruct"]
+        default: ["llama2"] # Example models, fetch from your Ollama instance
         fetch: true
       titleConvo: true
-      titleModel: "llama-3-1-8b-instruct"
+      titleModel: "llama2"
       summarize: false
-      summaryModel: "llama-3-1-8b-instruct"
-      forcePrompt: false
-      modelDisplayLabel: "OpenRouter"
+      summaryModel: "llama2"
 lifecycle: {}
 meilisearch:
   auth:
-    existingMasterKeySecret: librechat-credentials-env
+    existingMasterKeySecret: credentials-env
   enabled: true
   image:
     tag: v1.7.3
@@ -153,13 +151,23 @@ mongodb:
   databases:
     - LibreChat
   enabled: true
+
+ollama:
+  enabled: true
+
 nameOverride: ''
 nodeSelector: {}
 podAnnotations: {}
 podLabels: {}
 podSecurityContext: {}
 replicaCount: 1
-resources: {}
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "1"
+    memory: "2Gi"
 securityContext: {}
 service:
   annotations: {}
@@ -169,8 +177,20 @@ tolerations: []
 updateStrategy:
   type: RollingUpdate
 volumeMounts:
+  - name: librechat-data-volume
+    mountPath: /app/data
+  - name: librechat-uploads-volume
+    mountPath: /app/uploads
   - name: librechat-logs-volume
+    mountPath: /app/logs
+  - name: librechat-api-logs-volume
     mountPath: /app/api/logs
-volumes: 
+volumes:
+  - name: librechat-uploads-volume
+    emptyDir: {} 
+  - name: librechat-data-volume
+    emptyDir: {} 
   - name: librechat-logs-volume
+    emptyDir: {}
+  - name: librechat-api-logs-volume
     emptyDir: {}

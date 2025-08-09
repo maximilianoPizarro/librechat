@@ -2,7 +2,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: librechat-anyuid-scc
-  namespace: librechat
+  namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups: ["security.openshift.io"]
   resourceNames: ["anyuid"]
@@ -13,11 +13,11 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: librechat-anyuid-scc-binding
-  namespace: librechat
+  namespace: {{ .Release.Namespace }}
 subjects:
 - kind: ServiceAccount
   name: librechat-sa
-  namespace: librechat
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
   name: librechat-anyuid-scc

@@ -5,6 +5,8 @@ metadata:
   labels:
     {{- include "rag.labels" . | nindent 4 }}
     rag-component: rag
+  annotations:
+    {{- include "rag.openshiftAnnotations" . | nindent 4 }}
 spec:
   replicas: {{ .Values.rag.replicaCount }}
   selector:

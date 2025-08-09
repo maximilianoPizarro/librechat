@@ -1,0 +1,9 @@
+site_name: Librechat
+site_url: https://librechat-librechat-librechat.apps.cluster-cgtdr.cgtdr.sandbox141.opentlc.com
+site_author: Maximiliano Pizarro
+site_description: "A clean, responsive theme for static documentation websites that are generated with MkDocs"
+repo_url: "https://github.com/maximilianoPizarro/librechat-gitops"
+
+nav:
+  - Home: index.md
+theme: readthedocs

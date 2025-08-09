@@ -4,6 +4,8 @@ metadata:
   name: {{ include "librechat.fullname" $ }}
   labels:
     {{- include "librechat.labels" . | nindent 4 }}
+  annotations:
+    {{- include "librechat.openshiftAnnotations" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   {{- if .Values.updateStrategy }}

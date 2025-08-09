@@ -1,7 +1,3 @@
-
-
-
-
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -33,7 +29,11 @@ helm.sh/chart: {{ include "librechat.chart" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
+app.kubernetes.io/component: librechat
+app.kubernetes.io/part-of: {{ include "librechat.fullname" . }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/name: {{ include "librechat.fullname" . }}
+app: librechat
 {{- end }}
 
 {{/*
@@ -42,6 +42,15 @@ Selector labels
 {{- define "librechat.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "librechat.fullname" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+OpenShift annotations for the main librechat deployment
+*/}}
+{{- define "librechat.openshiftAnnotations" -}}
+app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"Deployment","name":"librechat-mongodb"}]'
+app.openshift.io/runtime: nodejs
+argocd.argoproj.io/sync-wave: "2"
 {{- end }}
 
 

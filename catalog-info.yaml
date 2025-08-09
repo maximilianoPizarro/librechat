@@ -1,0 +1,24 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "librechat"
+  description: "Librechat OpenShift"
+  annotations:
+    argocd/app-name: librechat
+    backstage.io/kubernetes-id: librechat
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/kubernetes-label-selector: 'app=librechat'
+  tags:
+    - helm
+    - nodejs
+  links:
+    - url: https://devspaces.apps.cluster-cgtdr.cgtdr.sandbox141.opentlc.com/#https://gitlab-gitlab.apps.cluster-cgtdr.cgtdr.sandbox141.opentlc.com/development/Librechat
+      title: OpenShift Dev Spaces (VS Code)
+      icon: web
+    - url: https://devspaces.apps.cluster-cgtdr.cgtdr.sandbox141.opentlc.com/#https://gitlab-gitlab.apps.cluster-cgtdr.cgtdr.sandbox141.opentlc.com/development/Librechat?che-editor=che-incubator/che-idea/latest
+      title: OpenShift Dev Spaces (JetBrains IntelliJ)
+      icon: web
+spec:
+  type: webside
+  lifecycle: experimental
+  owner: user1

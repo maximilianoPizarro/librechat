@@ -1,0 +1,57 @@
+{{- if (and .Values.persistentVolume.enabled (not .Values.persistentVolume.existingClaim)) -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  {{- if .Values.persistentVolume.annotations }}
+  annotations:
+{{ toYaml .Values.persistentVolume.annotations | indent 4 }}
+  {{- end }}
+  labels:
+    {{- include "ollama.labels" . | nindent 4 }}
+  name: {{ template "ollama.fullname" . }}
+  namespace: {{ include "ollama.namespace" . }}
+spec:
+  accessModes:
+{{ toYaml .Values.persistentVolume.accessModes | indent 4 }}
+{{- if .Values.persistentVolume.storageClass }}
+{{- if (eq "-" .Values.persistentVolume.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.persistentVolume.storageClass }}"
+{{- end }}
+{{- end }}
+{{- if .Values.persistentVolume.volumeMode }}
+  volumeMode: "{{ .Values.persistentVolume.volumeMode }}"
+{{- end }}
+{{- if .Values.persistentVolume.volumeName }}
+  volumeName: "{{ .Values.persistentVolume.volumeName }}"
+{{- end }}
+  resources:
+    requests:
+      storage: "{{ .Values.persistentVolume.size }}"
+{{- end -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-model
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 10Gi

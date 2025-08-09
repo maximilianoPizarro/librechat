@@ -1,14 +1,14 @@
 global: 
   librechat:
     existingSecretApiKey: OPENAI_API_KEY
-    existingSecretName: librechat-credentials-env
+    existingSecretName: credentials-env
 image:
   pullPolicy: IfNotPresent
   registry: ghcr.io
   repository: danny-avila/librechat-rag-api-dev-lite
   tag: latest
 imagePullSecrets: []
-nameOverride: ''
+nameOverride: 'librechat-rag-api'
 nodeSelector: {}
 podAnnotations: {}
 podLabels: {}

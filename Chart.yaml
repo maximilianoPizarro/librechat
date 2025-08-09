@@ -9,6 +9,10 @@ dependencies:
     version: 16.3.0
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
+  - name: ollama
+    version: 1.26.0
+    repository: file://./ollama
+    condition: ollama.enabled
   - name: meilisearch
     version: 0.7.0
     repository: file://./meilisearch

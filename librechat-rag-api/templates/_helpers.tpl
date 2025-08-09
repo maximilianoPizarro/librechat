@@ -1,7 +1,3 @@
-
-
-
-
 {{/*
 Create chart name and version as used by the chart label.
 */}}
@@ -35,8 +31,22 @@ helm.sh/chart: {{ include "rag.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/component: {{ include "rag.fullname" . }}
+app.kubernetes.io/part-of: {{ include "rag.fullname" . }}
+app: librechat
+app.kubernetes.io/name: {{ include "rag.fullname" . }}
 app.openshift.io/runtime: python
 {{- end }}
+
+
+{{/*
+OpenShift annotations for the main librechat deployment
+*/}}
+{{- define "rag.openshiftAnnotations" -}}
+app.openshift.io/connects-to: '[{"apiVersion":"apps/v1","kind":"StatefulSet","name":"librechat-postgresql"}]' 
+argocd.argoproj.io/sync-wave: "2"
+{{- end }}
+
 
 
 {{/*
