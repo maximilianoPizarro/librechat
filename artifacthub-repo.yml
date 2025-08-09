@@ -1,0 +1,6 @@
+repositoryID: "librechat-openshift"
+name: "librechat"
+displayName: "LibreChat Helm Charts"
+description: "Helm charts for deploying LibreChat and related components."
+type: "helm"
+url: "https://maximilianopizarro.github.io/librechat"
