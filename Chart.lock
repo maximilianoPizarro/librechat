@@ -15,4 +15,4 @@ dependencies:
   repository: file://./librechat-rag-api
   version: 0.5.1
 digest: sha256:9f1be019e2bea892757b5443ad2ad9bf3393e29c1e9d2e0886553aa583999f9e
-generated: "2025-08-08T20:02:51.89570276-03:00"
+generated: "2025-08-09T02:19:40.8842414-03:00"
