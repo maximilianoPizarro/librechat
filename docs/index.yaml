@@ -3,7 +3,7 @@ entries:
   librechat:
   - apiVersion: v2
     appVersion: v0.8.0
-    created: "2025-08-09T01:06:50.6977807-03:00"
+    created: "2025-08-09T01:14:51.2458856-03:00"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -27,7 +27,7 @@ entries:
       version: 0.5.1
     description: A Helm chart for deploying LibreChat, an open-source, AI-powered
       chat application.
-    digest: 5cc011d9a1e384165b9bcbe72b58d7b173870e0e501527193640451b6e10271c
+    digest: d4a5bfc2f6bc409fd4bac0f5e597cf77ac90e907377430c73e40517b7e3a0fc7
     home: https://www.librechat.ai
     icon: https://www.librechat.ai/librechat_alt.svg
     keywords:
@@ -49,4 +49,4 @@ entries:
     urls:
     - https://maximilianoPizarro.github.io/librechat/librechat-1.8.10.tgz
     version: 1.8.10
-generated: "2025-08-09T01:06:50.6831199-03:00"
+generated: "2025-08-09T01:14:51.2343823-03:00"
