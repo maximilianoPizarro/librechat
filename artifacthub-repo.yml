@@ -1,4 +1,4 @@
-repositoryID: "librechat-openshift"
+repositoryID: "1f9ef9f9-4115-49f3-b64f-6a3c6fa6479f"
 name: "librechat"
 displayName: "LibreChat Helm Charts"
 description: "Helm charts for deploying LibreChat and related components."
