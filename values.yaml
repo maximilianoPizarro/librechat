@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
   registry: ghcr.io
   repository: danny-avila/librechat
-  tag: 'v0.8.0-rc1'
+  tag: 'v0.8.0-rc4'
 imagePullSecrets: []
 
 route:
@@ -146,12 +146,19 @@ postgresql:
           -- CREATE USER postgres WITH PASSWORD 'postgres';
           -- GRANT ALL PRIVILEGES ON DATABASE "librechat-vectordb" TO postgres;
 mongodb:
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: mongo
+    tag: '8.0.13'
   auth:
     enabled: false
   databases:
     - LibreChat
   enabled: true
-
+  extraVolumeMounts:
+    - name: datadir
+      mountPath: /data/db
 ollama:
   enabled: true
 

@@ -1,5 +1,5 @@
 apiVersion: v2
-appVersion: v0.8.0
+appVersion: v0.8.0-rc4
 kubeVersion: ">=1.20.0"
 dependencies:
   - condition: postgresql.enabled
@@ -7,7 +7,7 @@ dependencies:
     repository: https://charts.bitnami.com/bitnami
     version: 15.5.38
   - name: mongodb
-    version: 16.3.0
+    version: 16.5.45
     repository: https://charts.bitnami.com/bitnami
     condition: mongodb.enabled
   - name: ollama
@@ -22,12 +22,12 @@ dependencies:
     version: 0.5.1
     repository: file://./librechat-rag-api
     condition: librechat-rag-api.enabled
-description: A Helm chart for deploying LibreChat, an open-source, AI-powered chat application.
+description: "A Helm chart for deploying LibreChat, an open-source, AI-powered chat application. Enhanced ChatGPT Clone: Features Agents, MCP, DeepSeek, Anthropic, AWS, OpenAI, Responses API, Azure, Groq, o1, GPT-5, Mistral, OpenRouter, Vertex AI, Gemini, Artifacts, AI model switching, message search, Code Interpreter, langchain, DALL-E-3, OpenAPI Actions, Functions, Secure Multi-User Auth, Presets, open-source for self-hosting. Active."
 home: https://www.librechat.ai
 icon: https://www.librechat.ai/librechat_alt.svg
 name: librechat
 type: application
-version: 1.8.10
+version: 1.8.14
 keywords:
   - librechat
   - chat
@@ -45,3 +45,8 @@ sources:
 
 annotations:
   charts.openshift.io/name: LibreChat
+  charts.openshift.io/provider-display-name: maximilianoPizarro
+  charts.openshift.io/support-url: https://github.com/maximilianoPizarro/librechat/issues
+  charts.openshift.io/documentation-url: https://www.librechat.ai/docs
+  charts.openshift.io/terms-of-service-url: https://www.librechat.ai/terms
+  charts.openshift.io/privacy-policy-url: https://www.librechat.ai/privacy

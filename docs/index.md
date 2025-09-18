@@ -1,4 +1,13 @@
 # LibreChat Helm Charts on Red Hat OpenShift
+<link rel="icon" href="https://raw.githubusercontent.com/maximilianoPizarro/botpress-helm-chart/main/favicon-152.ico" type="image/x-icon" >
+<p align="left">
+<img src="https://img.shields.io/badge/redhat-CC0000?style=for-the-badge&logo=redhat&logoColor=white" alt="Redhat">
+<img src="https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white" alt="kubernetes">
+<img src="https://img.shields.io/badge/helm-0db7ed?style=for-the-badge&logo=helm&logoColor=white" alt="Helm">
+<img src="https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white" alt="shell">
+<a href="https://www.linkedin.com/in/maximiliano-gregorio-pizarro-consultor-it"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="linkedin" /></a>
+<a href="https://artifacthub.io/packages/search?repo=librechat-openshift"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/librechat" alt="Artifact Hub" /></a>
+</p>
 
 This Librechat Helm Chart provides an easy, light weight template to deploy LibreChat on Kubernetes. LibreChat is a free, open-source, and self-hosted AI chatbot that allows you to interact with various large language models (LLMs) and customize your AI experience. For more information, visit the official website: [https://www.librechat.ai/](https://www.librechat.ai/)
  
@@ -237,7 +246,7 @@ helm repo add librechat-openshift https://maximilianopizarro.github.io/librechat
 3.  Helm install
 
 ```bash
-helm install librechat librechat-openshift/librechat --version 1.8.10 -f values.yaml --create-namespace --namespace librechat
+helm install librechat librechat-openshift/librechat --version 1.8.14 -f values.yaml --create-namespace --namespace librechat
 ```
 
 ## From Helm Chart Source
@@ -250,13 +259,13 @@ helm install librechat librechat-openshift/librechat --version 1.8.10 -f values.
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 helm dependency build
-helm package -u . -d charts
+helm package -u . -d docs
 ```
 
 ## Helm install
 
 ```bash
-helm install librechat charts/librechat-0.1.0.tgz --namespace librechat --create-namespace --set route.host="librechat.apps.rosa.nhmnt-wdmof-wez.1742.p3.openshiftapps.com"
+helm install librechat docs/librechat-1.8.14.tgz --namespace librechat --create-namespace --set route.host="librechat.apps.rosa.xcr72-yro5x-2iv.vjzc.p3.openshiftapps.com/dashboards"
 ```
 
 ## Helm uninstall
@@ -264,3 +273,45 @@ helm install librechat charts/librechat-0.1.0.tgz --namespace librechat --create
 ```bash
 helm uninstall librechat --namespace librechat
 ```
+
+# Deployment Strategy ArgoCD
+
+
+```bash
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: librechat
+  namespace: openshift-gitops
+spec:
+  generators:
+    - list:
+        elements:
+          - name: librechat
+            namespace: librechat
+            path: librechat
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: 'https://github.com/maximilianoPizarro/ia-developement-gitops.git'
+        targetRevision: main
+        path: '{{path}}'
+        helm:
+          valueFiles:
+            - helm-values.yaml
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+```
+Visite this page for more information 
+https://maximilianopizarro.github.io/ia-developement-gitops/

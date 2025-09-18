@@ -246,7 +246,7 @@ helm repo add librechat-openshift https://maximilianopizarro.github.io/librechat
 3.  Helm install
 
 ```bash
-helm install librechat librechat-openshift/librechat --version 1.8.10 -f values.yaml --create-namespace --namespace librechat
+helm install librechat librechat-openshift/librechat --version 1.8.14 -f values.yaml --create-namespace --namespace librechat
 ```
 
 ## From Helm Chart Source
@@ -265,7 +265,7 @@ helm package -u . -d docs
 ## Helm install
 
 ```bash
-helm install librechat docs/librechat-1.8.10.tgz --namespace librechat --create-namespace --set route.host="librechat.apps.rosa.xcr72-yro5x-2iv.vjzc.p3.openshiftapps.com/dashboards"
+helm install librechat docs/librechat-1.8.14.tgz --namespace librechat --create-namespace --set route.host="librechat.apps.rosa.xcr72-yro5x-2iv.vjzc.p3.openshiftapps.com/dashboards"
 ```
 
 ## Helm uninstall
@@ -276,41 +276,42 @@ helm uninstall librechat --namespace librechat
 
 # Deployment Strategy ArgoCD
 
+
 ```bash
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: librechat
-  namespace: janus-argocd
-  labels:
-    backstage-name: librechat
+  namespace: openshift-gitops
 spec:
   generators:
     - list:
         elements:
           - name: librechat
             namespace: librechat
-            path: .
+            path: librechat
   template:
     metadata:
       name: '{{name}}'
     spec:
-      destination:
-        namespace: '{{namespace}}'
-        server: 'https://kubernetes.default.svc'
       project: default
       source:
+        repoURL: 'https://github.com/maximilianoPizarro/ia-developement-gitops.git'
+        targetRevision: main
+        path: '{{path}}'
         helm:
           valueFiles:
-            - values.yaml
-        path: '{{path}}'
-        repoURL: 'https://github.com/maximilianoPizarro/librechat.git'
-        targetRevision: main
+            - helm-values.yaml
+      destination:
+        server: 'https://kubernetes.default.svc'
+        namespace: '{{namespace}}'
       syncPolicy:
         automated:
-          prune: true
           selfHeal: true
+          prune: true
         syncOptions:
           - CreateNamespace=true
           - PruneLast=true
 ```
+Visite this page for more information 
+https://maximilianopizarro.github.io/ia-developement-gitops/
