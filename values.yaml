@@ -1,7 +1,7 @@
 global:
   librechat:
     existingSecretApiKey: OPENAI_API_KEY
-    existingSecretName: credentials-env
+    existingSecretName: librechat-librechat-secretenv
 image:
   pullPolicy: IfNotPresent
   registry: ghcr.io
@@ -11,7 +11,7 @@ imagePullSecrets: []
 
 route:
   enabled: true  
-  host: librechat.openshiftapps.com
+  host: ''
 
 ingress:
   annotations: {}
@@ -25,13 +25,35 @@ ingress:
   tls: []
 librechat:
   configEnv:
+    SEARCH: 'true'
+    MEILI_NO_ANALYTICS: 'true'
+    MEILI_MASTER_KEY: librechat
+    EMBEDDINGS_PROVIDER: ollama
+    OLLAMA_BASE_URL: http://librechat-ollama:11434/v1
+    EMBEDDINGS_MODEL: nomic-embed-text
     OPENAI_API_KEY: IiI=
-    RAG_API_URL: aHR0cDovL2xpYnJlY2hhdC1saWJyZWNoYXQtcmFnLWFwaTo4MDAw
+    NODE_TLS_REJECT_UNAUTHORIZED: '0'
     CREDS_IV: 118a16ffe26a8712d0adb5b3cf8229ca
     CREDS_KEY: 99f12ba0ea72257aa78df8e99c9be801716a7e16fe77e7510a914112528aa05c
     DEBUG_PLUGINS: 'true'
-    JWT_REFREcdSH_SECRET: 8a447c316c171f5df8e304c085187b6d10e4eeef5174137d4ad4d2cdd956f5e7
+    JWT_REFRESH_SECRET: 8a447c316c171f5df8e304c085187b6d10e4eeef5174137d4ad4d2cdd956f5e7
     JWT_SECRET: 83096493d70e22561f84191c24f459d72e9b41f4c8657fe43aae8cb9b0fe1fa4
+    ALLOW_EMAIL_LOGIN: 'true'
+    ALLOW_REGISTRATION: 'true'
+    ALLOW_SOCIAL_LOGIN: 'true'
+    DOMAIN_SERVER: 'http://0.0.0.0:3080'
+    DOMAIN_SERVER: 'http://0.0.0.0:3080'
+    OPENID_CALLBACK_URL: /oauth/openid/callback
+    OPENID_LOGIN_ENABLED: 'true'
+    OPENID_SESSION_SECRET: sessionsecret
+    OPENID_ISSUER: 'https://auth.redhat.com/realms/librechat'
+    OPENID_USE_END_SESSION_ENDPOINT: 'true'
+    OPENID_CLIENT_ID: client-id
+    OPENID_CLIENT_SECRET: client-secret
+    SOCIAL_LOGIN_ENABLED: 'true'
+    OPENID_SCOPE: openid profile email
+    OPENID_REQUIRED_ROLE_TOKEN_KIND: access
+    OPENID_REQUIRED_ROLE_PARAMETER_PATH: realm_access.roles    
     PLUGIN_MODELS: >-
       gpt-4,gpt-4-turbo-preview,gpt-4-0125-preview,gpt-4-1106-preview,gpt-4-0613,gpt-3.5-turbo,gpt-3.5-turbo-0125,gpt-3.5-turbo-1106,gpt-3.5-turbo-0613,llama-3-1-8b-instruct
   configYamlContent: |
@@ -65,7 +87,7 @@ librechat:
     #registration:
     #  socialLogins: ["google", "facebook", "github", "discord", "openid"]
     #  allowedDomains:
-    #    - "*"
+    #    - "email"
     #    - ".apps.cluster-26wbn.26wbn.sandbox691.opentlc.com"
     endpoints:
       assistants:
@@ -88,7 +110,7 @@ librechat:
           summaryModel: "llama2"
   
   existingConfigYaml: ''
-  existingSecretName: credentials-env
+  existingSecretName: librechat-librechat-secretenv
   serviceAccountName: librechat-sa
   imageVolume:
     accessModes: ReadWriteOnce
@@ -97,23 +119,10 @@ librechat:
 librechat-rag-api:
   embeddingsProvider: openai
   enabled: true
-endpoints:
-  custom:
-    # OpenRouter.ai
-    - name: "Ollama"
-      apiKey: "${OPENAI_API_KEY}"
-      baseURL: "http://librechat-ollama:11434/v1" # Adjust if Ollama is on a different host
-      models:
-        default: ["llama2"] # Example models, fetch from your Ollama instance
-        fetch: true
-      titleConvo: true
-      titleModel: "llama2"
-      summarize: false
-      summaryModel: "llama2"
 lifecycle: {}
 meilisearch:
   auth:
-    existingMasterKeySecret: credentials-env
+    existingMasterKeySecret: librechat-librechat-secretenv
   enabled: true
   image:
     tag: v1.7.3

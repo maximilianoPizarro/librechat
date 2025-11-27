@@ -2,54 +2,6 @@
     "$schema": "http://json-schema.org/schema#",
     "type": "object",
     "properties": {
-        "endpoints": {
-            "type": "object",
-            "properties": {
-                "custom": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "apiKey": {
-                                "type": "string"
-                            },
-                            "baseURL": {
-                                "type": "string"
-                            },
-                            "models": {
-                                "type": "object",
-                                "properties": {
-                                    "default": {
-                                        "type": "array",
-                                        "items": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "fetch": {
-                                        "type": "boolean"
-                                    }
-                                }
-                            },
-                            "name": {
-                                "type": "string"
-                            },
-                            "summarize": {
-                                "type": "boolean"
-                            },
-                            "summaryModel": {
-                                "type": "string"
-                            },
-                            "titleConvo": {
-                                "type": "boolean"
-                            },
-                            "titleModel": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "global": {
             "type": "object",
             "properties": {
@@ -143,7 +95,7 @@
                         "DEBUG_PLUGINS": {
                             "type": "string"
                         },
-                        "JWT_REFREcdSH_SECRET": {
+                        "JWT_REFRESH_SECRET": {
                             "type": "string"
                         },
                         "JWT_SECRET": {
@@ -155,7 +107,49 @@
                         "PLUGIN_MODELS": {
                             "type": "string"
                         },
-                        "RAG_API_URL": {
+                        "ALLOW_EMAIL_LOGIN": {
+                            "type": "string"
+                        },
+                        "ALLOW_REGISTRATION": {
+                            "type": "string"
+                        },
+                        "ALLOW_SOCIAL_LOGIN": {
+                            "type": "string"
+                        },
+                        "DOMAIN_SERVER": {
+                            "type": "string"
+                        },
+                        "OPENID_CALLBACK_URL": {
+                            "type": "string"
+                        },
+                        "OPENID_LOGIN_ENABLED": {
+                            "type": "string"
+                        },
+                        "OPENID_SESSION_SECRET": {
+                            "type": "string"
+                        },
+                        "OPENID_ISSUER": {
+                            "type": "string"
+                        },
+                        "OPENID_USE_END_SESSION_ENDPOINT": {
+                            "type": "string"
+                        },
+                        "OPENID_CLIENT_ID": {
+                            "type": "string"
+                        },
+                        "OPENID_CLIENT_SECRET": {
+                            "type": "string"
+                        },
+                        "SOCIAL_LOGIN_ENABLED": {
+                            "type": "string"
+                        },
+                        "OPENID_SCOPE": {
+                            "type": "string"
+                        },
+                        "OPENID_REQUIRED_ROLE_TOKEN_KIND": {
+                            "type": "string"
+                        },
+                        "OPENID_REQUIRED_ROLE_PARAMETER_PATH": {
                             "type": "string"
                         }
                     }
@@ -259,6 +253,37 @@
                 },
                 "enabled": {
                     "type": "boolean"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "pullPolicy": {
+                            "type": "string"
+                        },
+                        "registry": {
+                            "type": "string"
+                        },
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "extraVolumeMounts": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "mountPath": {
+                                "type": "string"
+                            }
+                        }
+                    }
                 }
             }
         },

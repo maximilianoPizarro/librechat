@@ -1,7 +1,7 @@
 global: 
   librechat:
     existingSecretApiKey: OPENAI_API_KEY
-    existingSecretName: credentials-env
+    existingSecretName: librechat-librechat-secretenv
 image:
   pullPolicy: IfNotPresent
   registry: ghcr.io
