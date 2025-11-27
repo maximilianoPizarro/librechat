@@ -128,7 +128,7 @@ meilisearch:
     tag: v1.7.3
   persistence:
     enabled: true
-    storageClass: 'gp3-csi'
+    storageClass: ''
   serviceAccountName: librechat-meilisearch-sa
 postgresql:
   auth:
