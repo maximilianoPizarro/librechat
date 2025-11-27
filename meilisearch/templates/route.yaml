@@ -2,14 +2,14 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: {{ include "librechat.fullname" . }}
+  name: {{ include "meilisearch.fullname" . }}
   labels:
-    {{- include "librechat.labels" . | nindent 4 }}
+    {{- include "meilisearch.labels" . | nindent 4 }}
 spec:
   host: {{ .Values.route.host | default "" | quote }}
   to:
     kind: Service
-    name: {{ include "librechat.fullname" . }}
+    name: {{ include "meilisearch.fullname" . }}
     weight: 100
   port:
     targetPort: http

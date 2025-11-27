@@ -25,6 +25,10 @@ image:
   # -- Secret to authenticate against the docker registry
   pullSecret:
 
+route:
+  enabled: true  
+  host: ''
+
 # -- String to partially override meilisearch.fullname
 nameOverride: ""
 # -- String to fully override meilisearch.fullname
