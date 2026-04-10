@@ -12,7 +12,7 @@ title: LibreChat Helm Chart for Red Hat OpenShift
   --rh-gray-100: #f5f5f5;
   --rh-gray-200: #e0e0e0;
   --rh-gray-300: #d2d2d2;
-  --rh-gray-600: #6a6e73;
+  --rh-gray-600: #3c3f42;
   --rh-gray-900: #151515;
   --rh-blue: #0066cc;
   --rh-blue-dark: #004080;
@@ -215,7 +215,7 @@ table {
   font-size: 0.9rem;
 }
 th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--rh-gray-200); }
-th { background: var(--rh-gray-100); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rh-gray-600); }
+th { background: var(--rh-gray-100); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rh-gray-900); }
 tr:hover td { background: #f9f9f9; }
 
 /* Status badge */
@@ -270,7 +270,7 @@ tr:hover td { background: #f9f9f9; }
     <a href="#quickstart">Quick Start</a>
     <a href="#sandbox">Developer Sandbox</a>
     <a href="#models">AI Models</a>
-    <a href="#verification">Verification</a>
+    <a href="#container">Container</a>
     <a href="https://github.com/maximilianoPizarro/librechat">GitHub</a>
   </div>
 </nav>
@@ -279,7 +279,7 @@ tr:hover td { background: #f9f9f9; }
   <div class="hero-badges">
     <span class="badge badge-red">OpenShift Exclusive</span>
     <span class="badge badge-teal">Red Hat UBI 9</span>
-    <span class="badge badge-purple">Chart Verifier Compliant</span>
+    <span class="badge badge-purple">LiteLLM Proxy</span>
   </div>
   <h1>The Open-Source AI Platform<br>on <span>Red Hat OpenShift</span></h1>
   <p>Deploy LibreChat with enterprise-grade security, Red Hat certified container images, and native integration with OpenShift AI inference services.</p>
@@ -565,33 +565,6 @@ helm install librechat librechat/librechat \
     </tbody>
   </table>
 </section>
-
-<div class="section-alt">
-<section class="section" id="verification">
-  <h2>Chart <span>Verification</span></h2>
-  <p class="subtitle">Red Hat Community Helm Chart verification status</p>
-
-  <table>
-    <thead>
-      <tr><th>Check</th><th>Status</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>chart-testing/chart-testing</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>has-readme/has-readme</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>contains-test/contains-test</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>has-kubeversion/has-kubeversion</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>not-contains-crds/not-contains-crds</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>helm-lint/helm-lint</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>not-contain-csi-objects/not-contain-csi-objects</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>images-are-certified/images-are-certified</td><td><span class="status status-exempt"> Exempt (non-Red Hat app image)</span></td></tr>
-      <tr><td>contains-values/contains-values</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>contains-values-schema/contains-values-schema</td><td><span class="status status-pass"> Pass</span></td></tr>
-      <tr><td>required-annotations-present/required-annotations-present</td><td><span class="status status-pass"> Pass</span></td></tr>
-    </tbody>
-  </table>
-  <p style="margin-top:1rem;color:var(--rh-gray-600);font-size:0.875rem;">Profile: community v1.1 · Chart version: 1.8.16 · CI: <a href="https://github.com/maximilianoPizarro/librechat/actions">GitHub Actions</a></p>
-</section>
-</div>
 
 <section class="section" id="release">
   <h2>Release <span>Notes</span> — v1.8.16</h2>
