@@ -1,4 +1,4 @@
-# LibreChat Helm Chart for Red Hat OpenShift
+# LibreChat Helm Chart — Multi-Model AI Chat for OpenShift
 
 <p align="left">
 <img src="https://img.shields.io/badge/redhat-CC0000?style=for-the-badge&logo=redhat&logoColor=white" alt="Redhat">
@@ -9,7 +9,7 @@
 
 > **Documentation & Screenshots**: [maximilianopizarro.github.io/librechat](https://maximilianopizarro.github.io/librechat/)
 
-Deploy [LibreChat](https://www.librechat.ai/) on **Red Hat OpenShift** with a Red Hat UBI 9 certified container image, built-in LiteLLM proxy for OpenShift AI models, and Developer Sandbox support.
+A community Helm chart that deploys [LibreChat](https://www.librechat.ai/) as a unified chat interface for your existing inference services on **Red Hat OpenShift** — Granite, Qwen, Nemotron, or any vLLM model — with Red Hat UBI 9 certified images and Developer Sandbox support.
 
 **This Helm chart is designed exclusively for Red Hat OpenShift.**
 
@@ -63,18 +63,10 @@ helm install librechat librechat/librechat
 oc login --token=<your-token> --server=https://api.<cluster>.openshiftapps.com:6443
 
 helm repo add librechat https://maximilianopizarro.github.io/librechat/
-helm install librechat librechat/librechat \
-  -f values-sandbox.yaml \
-  --set litellm.apiKey=$(oc whoami -t)
+helm install librechat librechat/librechat -f values-sandbox.yaml
 ```
 
-The sandbox deployment connects to the shared AI models (Granite, Qwen, Nemotron) via LiteLLM proxy. OAuth tokens expire ~24h; refresh with:
-
-```bash
-helm upgrade librechat librechat/librechat \
-  -f values-sandbox.yaml \
-  --set litellm.apiKey=$(oc whoami -t)
-```
+The sandbox deployment uses `useServiceAccountToken: true` by default, which auto-mounts the pod's ServiceAccount token for authenticating to the shared AI models (Granite, Qwen, Nemotron) via LiteLLM proxy. No manual token management required.
 
 ### Install from Source
 
@@ -83,7 +75,7 @@ git clone https://github.com/maximilianoPizarro/librechat.git
 cd librechat
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm dependency build
-helm install librechat . -f values-sandbox.yaml --set litellm.apiKey=$(oc whoami -t)
+helm install librechat . -f values-sandbox.yaml
 ```
 
 ## Container Image (Red Hat UBI 9)
@@ -124,21 +116,23 @@ litellm:
       apiBase: "https://isvc-predictor.namespace.svc.cluster.local:8443/v1"
 ```
 
-### Cluster with ServiceAccount token
+### Cluster with ServiceAccount token (recommended)
 
-For production clusters where models require OAuth:
+Uses the pod's auto-mounted ServiceAccount token. No manual token management — the token refreshes automatically:
+
+```yaml
+litellm:
+  enabled: true
+  useServiceAccountToken: true
+```
+
+The ServiceAccount needs permissions to access the InferenceService endpoints. For manual token override:
 
 ```bash
-# Short-lived token (~24h)
 helm install librechat librechat/librechat \
   --set litellm.enabled=true \
+  --set litellm.useServiceAccountToken=false \
   --set litellm.apiKey=$(oc whoami -t)
-
-# Long-lived ServiceAccount token
-SA_TOKEN=$(oc create token my-sa --duration=8760h)
-helm install librechat librechat/librechat \
-  --set litellm.enabled=true \
-  --set litellm.apiKey=$SA_TOKEN
 ```
 
 ### Developer Sandbox Models

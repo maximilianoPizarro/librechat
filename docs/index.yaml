@@ -10,7 +10,7 @@ entries:
       charts.openshift.io/terms-of-service-url: https://www.librechat.ai/terms
     apiVersion: v2
     appVersion: v0.8.4
-    created: "2026-04-10T14:54:22.014839-03:00"
+    created: "2026-04-10T14:58:05.8190809-03:00"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -38,7 +38,7 @@ entries:
       AI, Gemini, Artifacts, AI model switching, message search, Code Interpreter,
       langchain, DALL-E-3, OpenAPI Actions, Functions, Secure Multi-User Auth, Presets,
       open-source for self-hosting. Active.'
-    digest: 461f90420a112510d0ec3c2248a381dc0e3629ace6723679beaa8e48dc108ddb
+    digest: 07b3c602dbedb3ccd6695abf812d6010e1c203cb7c1593b45200931304b80e08
     home: https://www.librechat.ai
     icon: https://www.librechat.ai/librechat_alt.svg
     keywords:
@@ -70,7 +70,7 @@ entries:
       charts.openshift.io/terms-of-service-url: https://www.librechat.ai/terms
     apiVersion: v2
     appVersion: v0.8.0-rc4
-    created: "2026-04-10T14:54:22.0013313-03:00"
+    created: "2026-04-10T14:58:05.8065688-03:00"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -130,7 +130,7 @@ entries:
       charts.openshift.io/terms-of-service-url: https://www.librechat.ai/terms
     apiVersion: v2
     appVersion: v0.8.0-rc4
-    created: "2026-04-10T14:54:21.9877798-03:00"
+    created: "2026-04-10T14:58:05.7945571-03:00"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -185,7 +185,7 @@ entries:
       charts.openshift.io/name: LibreChat
     apiVersion: v2
     appVersion: v0.8.0
-    created: "2026-04-10T14:54:21.9733147-03:00"
+    created: "2026-04-10T14:58:05.7795051-03:00"
     dependencies:
     - condition: postgresql.enabled
       name: postgresql
@@ -232,4 +232,4 @@ entries:
     urls:
     - https://maximilianopizarro.github.io/librechat/librechat-1.8.10.tgz
     version: 1.8.10
-generated: "2026-04-10T14:54:21.9601448-03:00"
+generated: "2026-04-10T14:58:05.7674837-03:00"

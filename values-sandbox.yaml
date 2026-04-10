@@ -236,10 +236,10 @@ ollama:
   enabled: false
 
 # LiteLLM proxy for accessing sandbox shared vLLM models.
-# The apiKey must be set at install/upgrade time with an OAuth token:
-#   helm upgrade librechat . -f values-sandbox.yaml \
-#     --set litellm.apiKey=$(oc whoami -t)
-# Tokens expire (~24h), refresh with helm upgrade --reuse-values.
+# Uses the pod's ServiceAccount token for authentication (auto-refresh).
+# No manual token management required.
+# To override with manual token: set useServiceAccountToken: false
+# and pass --set litellm.apiKey=$(oc whoami -t)
 litellm:
   enabled: true
   image:
@@ -250,6 +250,7 @@ litellm:
     port: 4000
   masterKey: "sk-litellm-1234"
   apiKey: "dummy"
+  useServiceAccountToken: true
   models:
     - name: granite-3.1-8b
       modelId: isvc-granite-31-8b-fp8

@@ -30,6 +30,13 @@ spec:
         - name: litellm
           image: "{{ .Values.litellm.image.repository }}:{{ .Values.litellm.image.tag }}"
           imagePullPolicy: {{ .Values.litellm.image.pullPolicy }}
+          {{- if .Values.litellm.useServiceAccountToken }}
+          command: ["sh", "-c"]
+          args:
+            - |
+              export MODEL_API_KEY=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
+              exec litellm --config /app/config.yaml --port {{ .Values.litellm.service.port }} --host 0.0.0.0
+          {{- else }}
           args:
             - "--config"
             - "/app/config.yaml"
@@ -37,6 +44,7 @@ spec:
             - "{{ .Values.litellm.service.port }}"
             - "--host"
             - "0.0.0.0"
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.litellm.service.port }}
@@ -44,8 +52,10 @@ spec:
           env:
             - name: LITELLM_MASTER_KEY
               value: {{ .Values.litellm.masterKey | quote }}
+            {{- if not .Values.litellm.useServiceAccountToken }}
             - name: MODEL_API_KEY
               value: {{ .Values.litellm.apiKey | quote }}
+            {{- end }}
             - name: SSL_VERIFY
               value: "False"
             - name: LITELLM_SSL_VERIFY

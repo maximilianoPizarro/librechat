@@ -330,6 +330,9 @@
                 "apiKey": {
                     "type": "string"
                 },
+                "useServiceAccountToken": {
+                    "type": "boolean"
+                },
                 "models": {
                     "type": "array",
                     "items": {

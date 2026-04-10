@@ -203,6 +203,7 @@ litellm:
     port: 4000
   masterKey: "sk-litellm-1234"
   apiKey: "dummy"
+  useServiceAccountToken: false
   models: []
   # Example models configuration:
   # models:

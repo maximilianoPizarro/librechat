@@ -225,18 +225,15 @@ tr:hover td { background: #f9f9f9; }
 .status-exempt { color: var(--rh-gray-600); }
 .status-exempt::before { content: '—'; }
 
-/* Architecture diagram */
-.arch-box {
+/* Mermaid diagram */
+.mermaid {
   background: var(--rh-gray-100);
   border: 1px solid var(--rh-gray-200);
   border-radius: var(--rh-radius);
   padding: 2rem;
   margin: 2rem 0;
-  font-family: var(--rh-font-mono);
-  font-size: 0.85rem;
-  line-height: 1.8;
+  text-align: center;
   overflow-x: auto;
-  white-space: pre;
 }
 
 /* Footer */
@@ -281,8 +278,8 @@ tr:hover td { background: #f9f9f9; }
     <span class="badge badge-teal">Red Hat UBI 9</span>
     <span class="badge badge-purple">LiteLLM Proxy</span>
   </div>
-  <h1>The Open-Source AI Platform<br>on <span>Red Hat OpenShift</span></h1>
-  <p>Deploy LibreChat with enterprise-grade security, Red Hat certified container images, and native integration with OpenShift AI inference services.</p>
+  <h1>Multi-Model AI Chat<br>for <span>OpenShift</span></h1>
+  <p>A community Helm chart that deploys LibreChat as a unified chat interface for your existing inference services — Granite, Qwen, Nemotron, or any vLLM model — on Red Hat UBI 9.</p>
   <div class="hero-buttons">
     <a href="#quickstart" class="btn btn-primary">Get Started</a>
     <a href="https://github.com/maximilianoPizarro/librechat" class="btn btn-outline">View on GitHub</a>
@@ -331,27 +328,23 @@ tr:hover td { background: #f9f9f9; }
 <section class="section" id="architecture">
   <h2>Architecture</h2>
   <p class="subtitle">How LibreChat connects to your OpenShift AI models</p>
-  <div class="arch-box">
-┌─────────────────────────────────────────────────────────────┐
-│                    OpenShift Cluster                         │
-│                                                             │
-│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
-│  │   LibreChat   │───▶│   LiteLLM    │───▶│  vLLM/KServe │  │
-│  │   (UBI 9)     │    │   Proxy      │    │  Models      │  │
-│  │   Port 3080   │    │   Port 4000  │    │  Port 8443   │  │
-│  └──────┬───────┘    └──────────────┘    └──────────────┘  │
-│         │                                                   │
-│    ┌────┴────┐  ┌───────────┐  ┌────────────┐              │
-│    │ MongoDB  │  │ PostgreSQL│  │ Meilisearch│              │
-│    │  27017   │  │ (pgvector)│  │   7700     │              │
-│    └─────────┘  │   5432    │  └────────────┘              │
-│                 └─────┬─────┘                               │
-│                       │                                     │
-│                 ┌─────┴─────┐                               │
-│                 │  RAG API   │                               │
-│                 │   8000     │                               │
-│                 └───────────┘                               │
-└─────────────────────────────────────────────────────────────┘
+  <div class="mermaid">
+graph LR
+    subgraph OpenShift Cluster
+        A["LibreChat<br/>(UBI 9 · 3080)"] -->|API| B["LiteLLM<br/>Proxy · 4000"]
+        B -->|SA Token| C["vLLM / KServe<br/>Models · 8443"]
+        A --> D["MongoDB<br/>27017"]
+        A --> E["Meilisearch<br/>7700"]
+        F["PostgreSQL<br/>pgvector · 5432"] --> G["RAG API<br/>8000"]
+        A --> G
+    end
+    style A fill:#ee0000,stroke:#a60000,color:#fff
+    style B fill:#5e40be,stroke:#3d2a7c,color:#fff
+    style C fill:#009596,stroke:#006d6e,color:#fff
+    style D fill:#3e8635,stroke:#2d6327,color:#fff
+    style E fill:#0066cc,stroke:#004080,color:#fff
+    style F fill:#3e8635,stroke:#2d6327,color:#fff
+    style G fill:#0066cc,stroke:#004080,color:#fff
   </div>
 </section>
 </div>
@@ -383,7 +376,7 @@ helm repo update</pre>
         <p>To connect LibreChat with vLLM/KServe inference services in your cluster:</p>
 <pre>helm upgrade librechat librechat/librechat \
   --set litellm.enabled=true \
-  --set litellm.apiKey=$(oc whoami -t) \
+  --set litellm.useServiceAccountToken=true \
   --set litellm.models[0].name=my-model \
   --set litellm.models[0].modelId=my-isvc-name \
   --set litellm.models[0].apiBase=https://my-isvc-predictor.ns.svc.cluster.local:8443/v1</pre>
@@ -433,19 +426,14 @@ helm repo update</pre>
 <pre>oc login --token=sha256~YOUR_TOKEN --server=https://api.YOUR_CLUSTER:6443
 
 helm repo add librechat https://maximilianopizarro.github.io/librechat/
-helm install librechat librechat/librechat \
-  -f values-sandbox.yaml \
-  --set litellm.apiKey=$(oc whoami -t)</pre>
+helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
       </div>
     </div>
     <div class="step">
       <div class="step-number">3</div>
       <div class="step-content">
-        <h3>Refresh OAuth token</h3>
-        <p>Sandbox OAuth tokens expire after ~24 hours. Refresh with:</p>
-<pre>helm upgrade librechat librechat/librechat \
-  -f values-sandbox.yaml \
-  --set litellm.apiKey=$(oc whoami -t)</pre>
+        <h3>Automatic model authentication</h3>
+        <p>The sandbox uses <code>useServiceAccountToken: true</code> by default — the pod's ServiceAccount token authenticates to the shared models automatically. No manual token management needed.</p>
       </div>
     </div>
   </div>
@@ -485,24 +473,18 @@ helm install librechat librechat/librechat \
 <pre>litellm:
   enabled: true
   masterKey: "sk-litellm-1234"
-  apiKey: "$(oc whoami -t)"    # OAuth token for KServe auth
+  useServiceAccountToken: true   # auto-mounts pod SA token
   models:
     - name: granite-3.1-8b
       modelId: isvc-granite-31-8b-fp8
       apiBase: "https://isvc-predictor.namespace.svc.cluster.local:8443/v1"</pre>
 
-  <h3 style="margin-top:2.5rem;">Cluster with ServiceAccount token</h3>
-  <p>For production clusters where models are secured with OAuth, pass the ServiceAccount token or a long-lived token:</p>
-<pre># Using oc whoami -t (expires ~24h)
-helm install librechat librechat/librechat \
-  --set litellm.enabled=true \
-  --set litellm.apiKey=$(oc whoami -t)
-
-# Using a ServiceAccount token (long-lived)
-SA_TOKEN=$(oc create token my-sa --duration=8760h)
-helm install librechat librechat/librechat \
-  --set litellm.enabled=true \
-  --set litellm.apiKey=$SA_TOKEN</pre>
+  <h3 style="margin-top:2.5rem;">ServiceAccount token (recommended)</h3>
+  <p>Uses the pod's auto-mounted ServiceAccount token. No manual token management — it refreshes automatically:</p>
+<pre>litellm:
+  enabled: true
+  useServiceAccountToken: true</pre>
+  <p style="margin-top:1rem;">For manual token override, set <code>useServiceAccountToken: false</code> and pass <code>--set litellm.apiKey=$(oc whoami -t)</code>.</p>
 
   <h3 style="margin-top:2.5rem;">Ollama (optional, local models)</h3>
   <p>For running local models with Ollama. Disabled by default to save resources.</p>
@@ -588,3 +570,8 @@ helm install librechat librechat/librechat \
   <p>Built for Red Hat OpenShift · Maintained by <a href="https://github.com/maximilianoPizarro">Maximiliano Pizarro</a> &amp; <a href="#">Carlos Estay</a></p>
   <p style="margin-top:0.5rem;">© 2026 LibreChat Helm Chart · Apache 2.0 License</p>
 </footer>
+
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: true, theme: 'neutral', flowchart: { useMaxWidth: true, htmlLabels: true } });
+</script>
