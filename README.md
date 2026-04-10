@@ -13,14 +13,15 @@ A community Helm chart that deploys [LibreChat](https://www.librechat.ai/) as a 
 
 **This Helm chart is designed exclusively for Red Hat OpenShift.**
 
-## Key Features (v1.8.16)
+## Key Features (v1.8.17)
 
+- **LibreChat v0.8.5-rc1** — Admin Panel, Context Compaction/Summarization, redesigned UI, MCP improvements
 - **Red Hat UBI 9 Container Image** — 3-stage build on `ubi9/nodejs-20-minimal` pushed to `quay.io/maximilianopizarro/librechat`
 - **LiteLLM Proxy Integration** — Built-in OpenAI-compatible proxy for vLLM/KServe InferenceServices
 - **Developer Sandbox Ready** — Pre-configured for restricted SCCs, random UIDs, `gp3-csi` storage
 - **OpenShift AI Models** — Connects to IBM Granite 3.1 8B, Qwen 3 8B, NVIDIA Nemotron Nano 9B v2
 - **Chart Verifier Compliant** — CI pipeline validates with Red Hat community chart-verifier
-- **Full Stack** — MongoDB, PostgreSQL (pgvector), Meilisearch, RAG API, optional Ollama
+- **Full Stack** — MongoDB 8.0.20, PostgreSQL (pgvector), Meilisearch, RAG API, optional Ollama
 
 ## Architecture
 
@@ -86,7 +87,7 @@ A Red Hat UBI 9-based container image is available at `quay.io/maximilianopizarr
 |----------|-------|
 | Image | `quay.io/maximilianopizarro/librechat` |
 | Base | `registry.access.redhat.com/ubi9/nodejs-20-minimal` |
-| Source | `ghcr.io/danny-avila/librechat:v0.8.4` |
+| Source | `ghcr.io/danny-avila/librechat:v0.8.5-rc1` |
 | Build | 3-stage: extract → rebuild native modules → minimal runtime |
 | SCC | Runs as non-root (UID 1000), `restricted` SCC compatible |
 | CI | GitHub Actions with `redhat-actions/buildah-build` |
@@ -94,9 +95,9 @@ A Red Hat UBI 9-based container image is available at `quay.io/maximilianopizarr
 ### Build locally
 
 ```bash
-podman build -t quay.io/maximilianopizarro/librechat:v0.8.4 \
+podman build -t quay.io/maximilianopizarro/librechat:v0.8.5-rc1 \
   -f container/Containerfile \
-  --build-arg LIBRECHAT_VERSION=v0.8.4 .
+  --build-arg LIBRECHAT_VERSION=v0.8.5-rc1 .
 ```
 
 ## AI Model Configuration
@@ -176,7 +177,7 @@ ollama:
 | Component | Version | Default | Description |
 |-----------|---------|---------|-------------|
 | PostgreSQL (Bitnami) | 15.5.38 | Enabled | PostgreSQL with pgvector for RAG embeddings |
-| MongoDB (Bitnami) | 16.5.45 | Enabled | Application data storage |
+| MongoDB (Bitnami) | 16.5.45 | Enabled | Application data storage (mongo:8.0.20) |
 | Ollama | 1.26.0 | **Disabled** | Local LLM inference |
 | Meilisearch | 0.7.0 | Enabled | Full-text search engine |
 | RAG API | 0.5.1 | Enabled | Retrieval Augmented Generation |

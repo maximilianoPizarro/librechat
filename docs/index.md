@@ -281,7 +281,7 @@ tr:hover td { background: #f9f9f9; }
     <span class="badge badge-purple">LiteLLM Proxy</span>
   </div>
   <h1>Multi-Model AI Chat<br>for <span>OpenShift</span></h1>
-  <p>A community Helm chart that deploys LibreChat as a unified chat interface for your existing inference services — Granite, Qwen, Nemotron, or any vLLM model — on Red Hat UBI 9.</p>
+  <p>A community Helm chart that deploys LibreChat v0.8.5-rc1 as a unified chat interface for your existing inference services — Granite, Qwen, Nemotron, or any vLLM model — on Red Hat UBI 9.</p>
   <div class="hero-buttons">
     <a href="#quickstart" class="btn btn-primary">Get Started</a>
     <a href="https://github.com/maximilianoPizarro/librechat" class="btn btn-outline">View on GitHub</a>
@@ -310,8 +310,8 @@ tr:hover td { background: #f9f9f9; }
     </div>
     <div class="card">
       <div class="card-icon card-icon-purple">🔌</div>
-      <h3>MCP &amp; Agents</h3>
-      <p>Model Context Protocol support, AI agents with code interpretation, file handling, and tool calling across any connected model.</p>
+      <h3>MCP, Agents &amp; Admin Panel</h3>
+      <p>MCP with 3-tier architecture and OAuth, AI agents with context compaction, admin panel with per-principal config overrides, custom roles and groups.</p>
     </div>
     <div class="card">
       <div class="card-icon card-icon-green">📦</div>
@@ -513,7 +513,7 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
     <tbody>
       <tr><td><strong>Image</strong></td><td><code>quay.io/maximilianopizarro/librechat</code></td></tr>
       <tr><td><strong>Base</strong></td><td><code>registry.access.redhat.com/ubi9/nodejs-20-minimal</code></td></tr>
-      <tr><td><strong>Source</strong></td><td><code>ghcr.io/danny-avila/librechat:v0.8.4</code></td></tr>
+      <tr><td><strong>Source</strong></td><td><code>ghcr.io/danny-avila/librechat:v0.8.5-rc1</code></td></tr>
       <tr><td><strong>Build</strong></td><td>3-stage: extract → rebuild native modules → minimal runtime</td></tr>
       <tr><td><strong>SCC</strong></td><td>Runs as non-root (UID 1000), <code>restricted</code> SCC compatible</td></tr>
       <tr><td><strong>CI</strong></td><td>GitHub Actions with <code>redhat-actions/buildah-build</code></td></tr>
@@ -521,14 +521,14 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
   </table>
 
   <h3 style="margin-top:2rem;">Build locally</h3>
-<pre>podman build -t quay.io/maximilianopizarro/librechat:v0.8.4 \
+<pre>podman build -t quay.io/maximilianopizarro/librechat:v0.8.5-rc1 \
   -f container/Containerfile \
-  --build-arg LIBRECHAT_VERSION=v0.8.4 .</pre>
+  --build-arg LIBRECHAT_VERSION=v0.8.5-rc1 .</pre>
 
   <h3 style="margin-top:2rem;">Run locally</h3>
 <pre>podman run -d --name librechat \
   -p 3080:3080 \
-  quay.io/maximilianopizarro/librechat:v0.8.4</pre>
+  quay.io/maximilianopizarro/librechat:v0.8.5-rc1</pre>
 </section>
 </div>
 
@@ -546,19 +546,21 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
       <tr><td><strong>Meilisearch</strong></td><td>0.7.0</td><td><code>meilisearch.enabled</code></td><td>Full-text search engine for messages</td></tr>
       <tr><td><strong>RAG API</strong></td><td>0.5.1</td><td><code>librechat-rag-api.enabled</code></td><td>Retrieval Augmented Generation API</td></tr>
       <tr><td><strong>LiteLLM</strong></td><td>v1.82.3</td><td><code>litellm.enabled</code></td><td>OpenAI-compatible proxy for vLLM/KServe models</td></tr>
+      <tr><td><strong>MongoDB image</strong></td><td>8.0.20</td><td>—</td><td>Updated from 8.0.13 matching upstream</td></tr>
     </tbody>
   </table>
 </section>
 
 <section class="section" id="release">
-  <h2>Release <span>Notes</span> — v1.8.16</h2>
+  <h2>Release <span>Notes</span> — v1.8.17</h2>
   <ul style="list-style:none;padding:0;">
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🏗️ <strong>Red Hat UBI 9 container image</strong> — 3-stage build on <code>ubi9/nodejs-20-minimal</code> pushed to <code>quay.io/maximilianopizarro/librechat</code></li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🤖 <strong>LiteLLM proxy integration</strong> — Built-in OpenAI-compatible proxy for vLLM/KServe InferenceServices</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🧠 <strong>Sandbox shared models</strong> — Pre-configured Granite 3.1 8B, Qwen 3 8B, Nemotron Nano 9B v2</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">📦 <strong>LibreChat v0.8.4</strong> — Latest stable application version with MCP, Agents, and Artifacts</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">✅ <strong>Chart Verifier CI</strong> — GitHub Actions workflow for Red Hat Community chart verification</li>
-    <li style="padding:0.5rem 0;">🔒 <strong>Restricted SCC</strong> — Full compatibility with Developer Sandbox security constraints</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🚀 <strong>LibreChat v0.8.5-rc1</strong> — Admin Panel, Context Compaction/Summarization, redesigned sidebar and tool call UI</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🛡️ <strong>Admin Panel</strong> — Per-principal config overrides, custom roles and groups, system grants for access control</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🧠 <strong>Context Compaction</strong> — Auto-summarizes long agent conversations to stay within context limits (Config v1.3.8)</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🔌 <strong>MCP improvements</strong> — 3-tier architecture, lazy init, OAuth improvements, domain allowlisting</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">📦 <strong>MongoDB 8.0.20</strong> — Updated from 8.0.13 matching upstream Docker Compose files</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">📌 <strong>Pinned Model Specs</strong> — Users can pin favorite model specs for quick access</li>
+    <li style="padding:0.5rem 0;">🏗️ <strong>Red Hat UBI 9</strong> — Container image on <code>ubi9/nodejs-20-minimal</code> with LiteLLM proxy and SA token auth</li>
   </ul>
 </section>
 

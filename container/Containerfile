@@ -1,4 +1,4 @@
-ARG LIBRECHAT_VERSION=v0.8.4
+ARG LIBRECHAT_VERSION=v0.8.5-rc1
 
 # Stage 1: Source - extract built app from official LibreChat image
 FROM ghcr.io/danny-avila/librechat:${LIBRECHAT_VERSION} AS source
@@ -16,7 +16,7 @@ RUN npm rebuild --build-from-source 2>&1 || true
 # Stage 3: Runtime - minimal UBI image
 FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:latest
 
-ARG LIBRECHAT_VERSION=v0.8.4
+ARG LIBRECHAT_VERSION=v0.8.5-rc1
 
 LABEL name="librechat" \
     vendor="LibreChat" \

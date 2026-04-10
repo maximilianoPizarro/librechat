@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
   registry: quay.io
   repository: maximilianopizarro/librechat
-  tag: 'v0.8.4'
+  tag: 'v0.8.5-rc1'
 imagePullSecrets: []
 
 enableServiceLinks: true
@@ -56,7 +56,7 @@ librechat:
     PLUGIN_MODELS: >-
       gpt-4,gpt-4-turbo-preview,gpt-4-0125-preview,gpt-4-1106-preview,gpt-4-0613,gpt-3.5-turbo,gpt-3.5-turbo-0125,gpt-3.5-turbo-1106,gpt-3.5-turbo-0613,llama-3-1-8b-instruct
   configYamlContent: |
-    version: 1.2.1
+    version: 1.3.8
     cache: true
     fileConfig:
       endpoints:
@@ -80,6 +80,10 @@ librechat:
         ipWindowInMinutes: 60
         userMax: 50
         userWindowInMinutes: 60
+    summarization:
+      enabled: true
+    mcpSettings:
+      allowedDomains: []
     #registration:
     #  socialLogins: ["google", "facebook", "github", "discord", "openid"]
     #  allowedDomains:
@@ -160,7 +164,7 @@ mongodb:
     pullPolicy: IfNotPresent
     registry: docker.io
     repository: mongo
-    tag: '8.0.13'
+    tag: '8.0.20'
   auth:
     enabled: false
   databases:

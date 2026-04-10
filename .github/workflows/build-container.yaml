@@ -11,7 +11,7 @@ on:
       librechat_version:
         description: 'LibreChat version to build'
         required: false
-        default: 'v0.8.4'
+        default: 'v0.8.5-rc1'
 
 env:
   REGISTRY: quay.io
