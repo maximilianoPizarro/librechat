@@ -60,6 +60,16 @@ spec:
               value: "False"
             - name: LITELLM_SSL_VERIFY
               value: "False"
+            - name: DATABASE_URL
+              {{- if .Values.litellm.databaseUrl }}
+              value: {{ .Values.litellm.databaseUrl | quote }}
+              {{- else if .Values.postgresql.enabled }}
+              value: "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.postgresql.auth.database }}"
+              {{- else }}
+              value: ""
+              {{- end }}
+            - name: STORE_MODEL_IN_DB
+              value: "True"
           volumeMounts:
             - name: config
               mountPath: /app/config.yaml

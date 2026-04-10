@@ -258,6 +258,7 @@ litellm:
   # Default master key for LiteLLM admin API: sk-litellm-1234
   masterKey: "sk-litellm-1234"
   apiKey: "dummy"
+  databaseUrl: ""
   useServiceAccountToken: true
   models:
     - name: granite-3.1-8b
