@@ -1,0 +1,20 @@
+{{- if and .Values.litellm.enabled .Values.litellm.route.enabled }}
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: {{ .Release.Name }}-litellm
+  labels:
+    {{- include "librechat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: litellm
+spec:
+  host: {{ .Values.litellm.route.host | default "" | quote }}
+  to:
+    kind: Service
+    name: {{ .Release.Name }}-litellm
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+{{- end }}

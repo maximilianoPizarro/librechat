@@ -199,12 +199,16 @@ ollama:
 #     --set litellm.apiKey=$(oc whoami -t)
 litellm:
   enabled: false
+  route:
+    enabled: true
+    host: ''
   image:
     repository: litellm/litellm-non_root
     tag: v1.82.3-stable
     pullPolicy: IfNotPresent
   service:
     port: 4000
+  # Default master key for LiteLLM admin API. Change in production.
   masterKey: "sk-litellm-1234"
   apiKey: "dummy"
   useServiceAccountToken: false

@@ -471,15 +471,32 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
   <p class="subtitle">Connect to any OpenAI-compatible model endpoint</p>
 
   <h3>LiteLLM Proxy (recommended for OpenShift)</h3>
-  <p>LiteLLM acts as an OpenAI-compatible proxy between LibreChat and your vLLM/KServe InferenceServices. It handles authentication, SSL, and model routing.</p>
+  <p>LiteLLM acts as an OpenAI-compatible proxy between LibreChat and your vLLM/KServe InferenceServices. It handles authentication, SSL, and model routing. An OpenShift Route is created by default for external access to the LiteLLM admin UI.</p>
+
+  <table>
+    <thead>
+      <tr><th>Setting</th><th>Default</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>litellm.masterKey</code></td><td><code>sk-litellm-1234</code></td><td>Master key for LiteLLM admin API. <strong>Change in production.</strong></td></tr>
+      <tr><td><code>litellm.route.enabled</code></td><td><code>true</code></td><td>Creates an OpenShift Route for external access</td></tr>
+      <tr><td><code>litellm.route.host</code></td><td><code>''</code> (auto)</td><td>Custom hostname for the route</td></tr>
+    </tbody>
+  </table>
+
 <pre>litellm:
   enabled: true
+  route:
+    enabled: true
   masterKey: "sk-litellm-1234"
-  useServiceAccountToken: true   # auto-mounts pod SA token
+  useServiceAccountToken: true
   models:
     - name: granite-3.1-8b
       modelId: isvc-granite-31-8b-fp8
       apiBase: "https://isvc-predictor.namespace.svc.cluster.local:8443/v1"</pre>
+
+  <p style="margin-top:1rem;">Access the LiteLLM admin UI via the route:</p>
+<pre>oc get route librechat-litellm -o jsonpath='{.spec.host}'</pre>
 
   <h3 style="margin-top:2.5rem;">ServiceAccount token (recommended)</h3>
   <p>Uses the pod's auto-mounted ServiceAccount token. No manual token management — it refreshes automatically:</p>

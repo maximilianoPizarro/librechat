@@ -104,17 +104,30 @@ podman build -t quay.io/maximilianopizarro/librechat:v0.8.5-rc1 \
 
 ### LiteLLM Proxy (recommended)
 
-LiteLLM is integrated into the Helm chart as an OpenAI-compatible proxy for vLLM/KServe InferenceServices. Enable it and configure your models:
+LiteLLM is integrated into the Helm chart as an OpenAI-compatible proxy for vLLM/KServe InferenceServices. It includes its own OpenShift Route (enabled by default) and an admin API protected by a master key.
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `litellm.masterKey` | `sk-litellm-1234` | Master key for the LiteLLM admin API. **Change in production.** |
+| `litellm.route.enabled` | `true` | Creates an OpenShift Route for external access |
+| `litellm.route.host` | `''` (auto) | Custom hostname for the route |
 
 ```yaml
 litellm:
   enabled: true
+  route:
+    enabled: true
   masterKey: "sk-litellm-1234"
-  apiKey: "$(oc whoami -t)"
   models:
     - name: granite-3.1-8b
       modelId: isvc-granite-31-8b-fp8
       apiBase: "https://isvc-predictor.namespace.svc.cluster.local:8443/v1"
+```
+
+Access the LiteLLM admin UI via the route:
+
+```bash
+oc get route librechat-litellm -o jsonpath='{.spec.host}'
 ```
 
 ### Cluster with ServiceAccount token (recommended)
