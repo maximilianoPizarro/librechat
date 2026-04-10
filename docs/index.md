@@ -41,21 +41,23 @@ code, pre {
   font-size: 0.875rem;
 }
 pre {
-  background: var(--rh-gray-900);
-  color: #e0e0e0;
-  padding: 1.25rem;
-  border-radius: var(--rh-radius);
+  background: var(--rh-black) !important;
+  color: #f0f0f0 !important;
+  padding: 1.25rem !important;
+  border-radius: var(--rh-radius) !important;
+  border: 1px solid #333 !important;
   overflow-x: auto;
   margin: 1rem 0;
   line-height: 1.5;
 }
 code {
-  background: var(--rh-gray-100);
+  background: #e8e8e8 !important;
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
-  color: var(--rh-gray-900);
+  color: var(--rh-black) !important;
+  font-size: 0.85rem;
 }
-pre code { background: none; padding: 0; color: inherit; }
+pre code { background: none !important; padding: 0; color: #f0f0f0 !important; }
 
 /* Navbar */
 .navbar {
