@@ -38,6 +38,9 @@
         "imagePullSecrets": {
             "type": "array"
         },
+        "enableServiceLinks": {
+            "type": "boolean"
+        },
         "ingress": {
             "type": "object",
             "properties": {
@@ -293,6 +296,76 @@
         "nodeSelector": {
             "type": "object"
         },
+        "litellm": {
+            "type": "object",
+            "properties": {
+                "enabled": {
+                    "type": "boolean"
+                },
+                "image": {
+                    "type": "object",
+                    "properties": {
+                        "repository": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        },
+                        "pullPolicy": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "service": {
+                    "type": "object",
+                    "properties": {
+                        "port": {
+                            "type": "integer"
+                        }
+                    }
+                },
+                "masterKey": {
+                    "type": "string"
+                },
+                "apiKey": {
+                    "type": "string"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                                "type": "string"
+                            },
+                            "modelId": {
+                                "type": "string"
+                            },
+                            "apiBase": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "podSecurityContext": {
+                    "type": "object"
+                },
+                "securityContext": {
+                    "type": "object"
+                },
+                "resources": {
+                    "type": "object",
+                    "properties": {
+                        "limits": {
+                            "type": "object"
+                        },
+                        "requests": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
         "ollama": {
             "type": "object",
             "properties": {
@@ -394,6 +467,12 @@
                 }
             }
         },
+        "livenessProbe": {
+            "type": "object"
+        },
+        "readinessProbe": {
+            "type": "object"
+        },
         "route": {
             "type": "object",
             "properties": {
@@ -402,6 +481,9 @@
                 },
                 "host": {
                     "type": "string"
+                },
+                "sccRoleDisabled": {
+                    "type": "boolean"
                 }
             }
         },

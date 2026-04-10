@@ -1,0 +1,56 @@
+ARG LIBRECHAT_VERSION=v0.8.4
+
+# Stage 1: Source - extract built app from official LibreChat image
+FROM ghcr.io/danny-avila/librechat:${LIBRECHAT_VERSION} AS source
+
+# Stage 2: Builder - rebuild native modules for glibc (RHEL)
+FROM registry.access.redhat.com/ubi9/nodejs-20:latest AS builder
+
+USER 0
+
+COPY --from=source /app /app
+WORKDIR /app
+
+RUN npm rebuild --build-from-source 2>&1 || true
+
+# Stage 3: Runtime - minimal UBI image
+FROM registry.access.redhat.com/ubi9/nodejs-20-minimal:latest
+
+ARG LIBRECHAT_VERSION=v0.8.4
+
+LABEL name="librechat" \
+    vendor="LibreChat" \
+    version="${LIBRECHAT_VERSION}" \
+    release="1" \
+    summary="LibreChat on Red Hat UBI 9" \
+    description="LibreChat is an open-source AI chat platform. Repackaged from ghcr.io/danny-avila/librechat:${LIBRECHAT_VERSION} onto Red Hat UBI 9 with Node.js 20." \
+    maintainer="Maximiliano Pizarro <mapizarr@redhat.com>" \
+    io.k8s.display-name="LibreChat AI Platform" \
+    io.k8s.description="LibreChat AI chat platform on Red Hat UBI 9" \
+    io.openshift.tags="librechat,chat,ai,llm,openshift" \
+    io.openshift.expose-services="3080:http" \
+    io.openshift.maintainer.project="https://github.com/maximilianoPizarro/librechat" \
+    source-image="ghcr.io/danny-avila/librechat:${LIBRECHAT_VERSION}"
+
+USER 0
+
+RUN microdnf install -y shadow-utils && \
+    microdnf clean all && \
+    useradd -r -u 1000 -g 0 -s /sbin/nologin -d /home/node node && \
+    mkdir -p /home/node /app/client/public/images /app/logs /app/uploads /app/data /app/api/logs && \
+    chown -R 1000:0 /home/node /app && \
+    chmod -R g=u /home/node /app
+
+COPY --from=builder --chown=1000:0 /app /app
+
+ENV HOST=0.0.0.0 \
+    NODE_ENV=production \
+    PORT=3080
+
+EXPOSE 3080
+
+USER 1000
+
+WORKDIR /app
+
+CMD ["npm", "run", "backend"]

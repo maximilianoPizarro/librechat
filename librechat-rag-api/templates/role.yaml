@@ -1,7 +1,8 @@
+{{- if not (index .Values "sccRoleDisabled" | default false) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: librechat-anyuid-scc
+  name: {{ include "rag.fullname" . }}-anyuid-scc
   namespace: {{ .Release.Namespace }}
 rules:
 - apiGroups: ["security.openshift.io"]
@@ -12,13 +13,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: librechat-anyuid-scc-binding
+  name: {{ include "rag.fullname" . }}-anyuid-scc-binding
   namespace: {{ .Release.Namespace }}
 subjects:
 - kind: ServiceAccount
-  name: librechat-sa
+  name: {{ .Values.serviceAccount.name | default "default" }}
   namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: librechat-anyuid-scc
+  name: {{ include "rag.fullname" . }}-anyuid-scc
   apiGroup: rbac.authorization.k8s.io
+{{- end }}

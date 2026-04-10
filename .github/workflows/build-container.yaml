@@ -1,0 +1,69 @@
+name: Build and Push LibreChat UBI Container Image
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'container/**'
+      - '.github/workflows/build-container.yaml'
+  workflow_dispatch:
+    inputs:
+      librechat_version:
+        description: 'LibreChat version to build'
+        required: false
+        default: 'v0.8.4'
+
+env:
+  REGISTRY: quay.io
+  IMAGE_NAME: maximilianopizarro/librechat
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set LibreChat version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ github.event.inputs.librechat_version }}" ]; then
+            echo "LIBRECHAT_VERSION=${{ github.event.inputs.librechat_version }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=$(grep '^appVersion:' Chart.yaml | awk '{print $2}' | tr -d '"')
+            echo "LIBRECHAT_VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Log in to Red Hat Registry
+        uses: docker/login-action@v3
+        with:
+          registry: registry.redhat.io
+          username: ${{ secrets.REDHAT_REGISTRY_USERNAME }}
+          password: ${{ secrets.REDHAT_REGISTRY_PASSWORD }}
+
+      - name: Log in to Quay.io
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_PASSWORD }}
+
+      - name: Build container image
+        uses: redhat-actions/buildah-build@v2
+        id: build
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: |
+            ${{ steps.version.outputs.LIBRECHAT_VERSION }}
+            latest
+          containerfiles: |
+            ./container/Containerfile
+          build-args: |
+            LIBRECHAT_VERSION=${{ steps.version.outputs.LIBRECHAT_VERSION }}
+
+      - name: Push to Quay.io
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build.outputs.image }}
+          tags: ${{ steps.build.outputs.tags }}
+          registry: ${{ env.REGISTRY }}

@@ -1,0 +1,27 @@
+{{- if .Values.litellm.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-litellm
+  labels:
+    {{- include "librechat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: litellm
+data:
+  config.yaml: |
+    model_list:
+      {{- range .Values.litellm.models }}
+      - model_name: {{ .name }}
+        litellm_params:
+          model: openai/{{ .modelId }}
+          api_base: {{ .apiBase }}
+          api_key: os.environ/MODEL_API_KEY
+          ssl_verify: false
+          drop_params: true
+        model_info:
+          supports_function_calling: true
+      {{- end }}
+    litellm_settings:
+      drop_params: true
+    general_settings:
+      master_key: os.environ/LITELLM_MASTER_KEY
+{{- end }}

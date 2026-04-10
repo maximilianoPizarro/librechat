@@ -1,0 +1,59 @@
+name: Chart Verifier
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Chart.yaml'
+      - 'templates/**'
+      - 'values.yaml'
+      - 'values.schema.json'
+      - 'docs/librechat-*.tgz'
+      - '.github/workflows/chart-verifier.yaml'
+  workflow_dispatch:
+    inputs:
+      chart_version:
+        description: 'Chart version to verify (e.g. 1.8.16)'
+        required: false
+        default: ''
+
+jobs:
+  verify:
+    name: Red Hat Community Chart Verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Determine chart version
+        id: chart
+        run: |
+          if [ -n "${{ github.event.inputs.chart_version }}" ]; then
+            echo "VERSION=${{ github.event.inputs.chart_version }}" >> $GITHUB_OUTPUT
+          else
+            VERSION=$(grep '^version:' Chart.yaml | awk '{print $2}' | tr -d '"')
+            echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          fi
+          echo "Chart version: ${VERSION}"
+
+      - name: Run chart-verifier
+        run: |
+          CHART_URL="https://maximilianopizarro.github.io/librechat/librechat-${{ steps.chart.outputs.VERSION }}.tgz"
+          echo "=== Chart Verifier Report ==="
+          echo "Chart URL: ${CHART_URL}"
+          echo "Profile: community v1.1"
+          echo "Date: $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+          echo "=============================="
+          echo ""
+          podman run --rm -i \
+            "quay.io/redhat-certification/chart-verifier" \
+            verify --set profile.vendorType=community,profile.version=v1.1 \
+            "${CHART_URL}" 2>&1 | tee report.yaml
+
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chart-verifier-report-${{ steps.chart.outputs.VERSION }}
+          path: report.yaml
+          retention-days: 90

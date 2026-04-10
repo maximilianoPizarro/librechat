@@ -1,353 +1,617 @@
-# LibreChat Helm Charts on Red Hat OpenShift
-<link rel="icon" href="https://raw.githubusercontent.com/maximilianoPizarro/botpress-helm-chart/main/favicon-152.ico" type="image/x-icon" >
-<p align="left">
-<img src="https://img.shields.io/badge/redhat-CC0000?style=for-the-badge&logo=redhat&logoColor=white" alt="Redhat">
-<img src="https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white" alt="kubernetes">
-<img src="https://img.shields.io/badge/helm-0db7ed?style=for-the-badge&logo=helm&logoColor=white" alt="Helm">
-<img src="https://img.shields.io/badge/shell_script-%23121011.svg?style=for-the-badge&logo=gnu-bash&logoColor=white" alt="shell">
-<a href="https://www.linkedin.com/in/maximiliano-gregorio-pizarro-consultor-it"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="linkedin" /></a>
-<a href="https://artifacthub.io/packages/search?repo=librechat-openshift"><img src="https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/librechat" alt="Artifact Hub" /></a>
-</p>
+---
+layout: default
+title: LibreChat Helm Chart for Red Hat OpenShift
+---
 
-This Librechat Helm Chart provides an easy, light weight template to deploy LibreChat on Kubernetes. LibreChat is a free, open-source, and self-hosted AI chatbot that allows you to interact with various large language models (LLMs) and customize your AI experience. For more information, visit the official website: [https://www.librechat.ai/](https://www.librechat.ai/)
- 
-# Installation
+<style>
+:root {
+  --rh-red: #ee0000;
+  --rh-red-dark: #a60000;
+  --rh-black: #151515;
+  --rh-white: #ffffff;
+  --rh-gray-100: #f5f5f5;
+  --rh-gray-200: #e0e0e0;
+  --rh-gray-300: #d2d2d2;
+  --rh-gray-600: #6a6e73;
+  --rh-gray-900: #151515;
+  --rh-blue: #0066cc;
+  --rh-blue-dark: #004080;
+  --rh-purple: #5e40be;
+  --rh-teal: #009596;
+  --rh-green: #3e8635;
+  --rh-font: 'Red Hat Display', 'Red Hat Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --rh-font-mono: 'Red Hat Mono', 'Fira Code', 'Consolas', monospace;
+  --rh-radius: 8px;
+  --rh-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --rh-shadow-lg: 0 8px 24px rgba(0,0,0,0.12);
+  --rh-transition: 0.2s ease;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: var(--rh-font);
+  color: var(--rh-gray-900);
+  background: var(--rh-white);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--rh-blue); text-decoration: none; transition: color var(--rh-transition); }
+a:hover { color: var(--rh-blue-dark); }
+code, pre {
+  font-family: var(--rh-font-mono);
+  font-size: 0.875rem;
+}
+pre {
+  background: var(--rh-gray-900);
+  color: #e0e0e0;
+  padding: 1.25rem;
+  border-radius: var(--rh-radius);
+  overflow-x: auto;
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+code {
+  background: var(--rh-gray-100);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: var(--rh-gray-900);
+}
+pre code { background: none; padding: 0; color: inherit; }
 
-## Environment Variables
+/* Navbar */
+.navbar {
+  background: var(--rh-black);
+  padding: 0 2rem;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--rh-white);
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.navbar-brand svg { height: 28px; width: 28px; }
+.navbar-links { display: flex; gap: 1.5rem; }
+.navbar-links a { color: var(--rh-gray-300); font-size: 0.875rem; font-weight: 500; }
+.navbar-links a:hover { color: var(--rh-white); }
 
-### Chart Parameters
+/* Hero */
+.hero {
+  background: linear-gradient(135deg, var(--rh-black) 0%, #1a1a2e 50%, #16213e 100%);
+  color: var(--rh-white);
+  padding: 6rem 2rem 5rem;
+  text-align: center;
+}
+.hero h1 {
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.02em;
+}
+.hero h1 span { color: var(--rh-red); }
+.hero p {
+  font-size: 1.2rem;
+  color: var(--rh-gray-300);
+  max-width: 640px;
+  margin: 0 auto 2.5rem;
+}
+.hero-badges { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: var(--rh-gray-200);
+}
+.badge-red { border-color: var(--rh-red); color: #ff6b6b; }
+.badge-teal { border-color: var(--rh-teal); color: #4dd0e1; }
+.badge-purple { border-color: var(--rh-purple); color: #b39ddb; }
+.hero-buttons { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--rh-radius);
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all var(--rh-transition);
+  border: 2px solid transparent;
+}
+.btn-primary { background: var(--rh-red); color: var(--rh-white); }
+.btn-primary:hover { background: var(--rh-red-dark); color: var(--rh-white); }
+.btn-outline { border-color: var(--rh-gray-300); color: var(--rh-white); background: transparent; }
+.btn-outline:hover { border-color: var(--rh-white); background: rgba(255,255,255,0.05); color: var(--rh-white); }
 
-| Parameter | Description | Default |
-|---|---|---|
-| `replicaCount` | Number of LibreChat pods. | `1` |
-| `image.repository` | Repository for the LibreChat container image. | `ghcr.io/danny-avila/librechat` |
-| `image.tag` | Tag for the LibreChat container image. | The Chart's `AppVersion` |
-| `route.enabled` | Enables an OpenShift Route for LibreChat. | `true` |
-| `route.host` | The hostname for the OpenShift Route. **Must be overridden.** | `librechat.openshiftapps.com` |
-| `ingress.enabled` | Enables a Kubernetes Ingress for LibreChat. | `false` |
-| `global.librechat.existingSecretName` | Name of the K8s secret containing API keys and other credentials. | `librechat-librechat-librechat-configenv` |
-| `librechat.configYamlContent` | Inline configuration for `librechat.yaml`. | (See `values.yaml`) |
-| `librechat.imageVolume.enabled` | Enables a PersistentVolume for user-uploaded images. | `true` |
-| `librechat.imageVolume.size` | Size of the persistent volume for images. | `10G` |
-| `librechat-rag-api.enabled` | Deploys the LibreChat RAG API subchart. | `true` |
-| `meilisearch.enabled` | Deploys the Meilisearch subchart for search functionality. | `true` |
-| `postgresql.enabled` | Deploys the PostgreSQL (pgvector) subchart for vector storage. | `true` |
-| `mongodb.enabled` | Deploys the MongoDB subchart for application data. | `true` |
-| `resources` | Defines resource requests and limits (CPU, memory, GPU) for the LibreChat pod. | `{}` |
+/* Sections */
+.section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+.section-alt { background: var(--rh-gray-100); }
+.section-dark { background: var(--rh-black); color: var(--rh-white); }
+.section h2 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+}
+.section h2 span { color: var(--rh-red); }
+.section .subtitle { color: var(--rh-gray-600); font-size: 1.1rem; margin-bottom: 3rem; }
 
-### Environment Variables Configuration
+/* Cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+.card {
+  background: var(--rh-white);
+  border: 1px solid var(--rh-gray-200);
+  border-radius: var(--rh-radius);
+  padding: 2rem;
+  transition: all var(--rh-transition);
+}
+.card:hover { box-shadow: var(--rh-shadow-lg); border-color: var(--rh-gray-300); transform: translateY(-2px); }
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  font-size: 1.5rem;
+}
+.card-icon-red { background: #fde8e8; color: var(--rh-red); }
+.card-icon-blue { background: #e8f0fe; color: var(--rh-blue); }
+.card-icon-teal { background: #e0f7f7; color: var(--rh-teal); }
+.card-icon-purple { background: #f0ebff; color: var(--rh-purple); }
+.card-icon-green { background: #e8f5e3; color: var(--rh-green); }
+.card h3 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; }
+.card p { color: var(--rh-gray-600); font-size: 0.925rem; line-height: 1.55; }
 
-Environment variables are configured in `librechat.configEnv` section of `values.yaml`. These variables are passed to the LibreChat container and control various aspects of the application behavior.
+/* Steps */
+.steps { counter-reset: step; }
+.step {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  align-items: flex-start;
+}
+.step-number {
+  counter-increment: step;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--rh-red);
+  color: var(--rh-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+}
+.step-content { flex: 1; }
+.step-content h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; }
+.step-content p { color: var(--rh-gray-600); font-size: 0.925rem; }
 
-#### General Configuration Variables
+/* Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.9rem;
+}
+th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid var(--rh-gray-200); }
+th { background: var(--rh-gray-100); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--rh-gray-600); }
+tr:hover td { background: #f9f9f9; }
 
-| Parameter | Description | Required | Example |
-|---|---|---|---|
-| `OPENAI_API_KEY` | API key for OpenAI services. Can be used for multiple providers. | Yes | Base64 encoded value |
-| `NODE_TLS_REJECT_UNAUTHORIZED` | Disable TLS certificate validation (for development only). | No | `'0'` or `'1'` |
-| `CREDS_IV` | Initialization vector for encryption. Generate using `openssl rand -hex 16`. | Yes | `118a16ffe26a8712d0adb5b3cf8229ca` |
-| `CREDS_KEY` | Encryption key for credentials. Generate using `openssl rand -hex 32`. | Yes | `99f12ba0ea72257aa78df8e99c9be801716a7e16fe77e7510a914112528aa05c` |
-| `JWT_SECRET` | Secret key for JWT token signing. Generate using `openssl rand -hex 32`. | Yes | `83096493d70e22561f84191c24f459d72e9b41f4c8657fe43aae8cb9b0fe1fa4` |
-| `JWT_REFRESH_SECRET` | Secret key for JWT refresh tokens. Generate using `openssl rand -hex 32`. | Yes | `8a447c316c171f5df8e304c085187b6d10e4eeef5174137d4ad4d2cdd956f5e7` |
-| `DEBUG_PLUGINS` | Enable debug mode for plugins. | No | `'true'` or `'false'` |
-| `PLUGIN_MODELS` | Comma-separated list of models that support plugins. | No | `gpt-4,gpt-3.5-turbo,llama-3-1-8b-instruct` |
-| `DOMAIN_SERVER` | Server domain URL for LibreChat. | Yes | `http://0.0.0.0:3080` or `https://librechat.example.com` |
+/* Status badge */
+.status { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 600; }
+.status-pass { color: var(--rh-green); }
+.status-pass::before { content: '✓'; font-weight: 700; }
+.status-exempt { color: var(--rh-gray-600); }
+.status-exempt::before { content: '—'; }
 
-#### Authentication and Registration Variables
+/* Architecture diagram */
+.arch-box {
+  background: var(--rh-gray-100);
+  border: 1px solid var(--rh-gray-200);
+  border-radius: var(--rh-radius);
+  padding: 2rem;
+  margin: 2rem 0;
+  font-family: var(--rh-font-mono);
+  font-size: 0.85rem;
+  line-height: 1.8;
+  overflow-x: auto;
+  white-space: pre;
+}
 
-| Parameter | Description | Required | Example |
-|---|---|---|---|
-| `ALLOW_EMAIL_LOGIN` | Enable email-based login. | No | `'true'` or `'false'` |
-| `ALLOW_REGISTRATION` | Allow new user registration. | No | `'true'` or `'false'` |
-| `ALLOW_SOCIAL_LOGIN` | Enable social login providers. | No | `'true'` or `'false'` |
+/* Footer */
+.footer {
+  background: var(--rh-black);
+  color: var(--rh-gray-300);
+  padding: 3rem 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+.footer a { color: var(--rh-gray-200); }
+.footer-links { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
 
-#### OpenID Connect Configuration Variables
+/* Responsive */
+@media (max-width: 768px) {
+  .hero h1 { font-size: 2.2rem; }
+  .hero p { font-size: 1rem; }
+  .section h2 { font-size: 1.7rem; }
+  .card-grid { grid-template-columns: 1fr; }
+  .navbar-links { display: none; }
+}
+</style>
 
-OpenID Connect authentication is configured through environment variables in `librechat.configEnv`. These variables enable integration with identity providers like Red Hat SSO, Keycloak, or other OIDC-compliant providers.
+<nav class="navbar">
+  <div class="navbar-brand">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" stroke="#ee0000" stroke-width="2"/><path d="M8 12h8M12 8v8" stroke="#ee0000" stroke-width="2" stroke-linecap="round"/></svg>
+    LibreChat on OpenShift
+  </div>
+  <div class="navbar-links">
+    <a href="#features">Features</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="#sandbox">Developer Sandbox</a>
+    <a href="#models">AI Models</a>
+    <a href="#verification">Verification</a>
+    <a href="https://github.com/maximilianoPizarro/librechat">GitHub</a>
+  </div>
+</nav>
 
-| Parameter | Description | Required | Example |
-|---|---|---|---|
-| `OPENID_LOGIN_ENABLED` | Enable OpenID Connect authentication. | No | `'true'` or `'false'` |
-| `OPENID_ISSUER` | OpenID Connect issuer URL (authority URL). | Yes (if OpenID enabled) | `https://auth.redhat.com/realms/librechat` |
-| `OPENID_CLIENT_ID` | OpenID Connect client ID registered with the identity provider. | Yes (if OpenID enabled) | `librechat-client` |
-| `OPENID_CLIENT_SECRET` | OpenID Connect client secret from the identity provider. | Yes (if OpenID enabled) | `your-client-secret` |
-| `OPENID_CALLBACK_URL` | Callback URL path for OAuth redirect. | Yes (if OpenID enabled) | `/oauth/openid/callback` |
-| `OPENID_SCOPE` | OpenID Connect scopes to request. | No | `openid profile email` |
-| `OPENID_SESSION_SECRET` | Secret for encrypting session data. | Yes (if OpenID enabled) | `your-session-secret` |
-| `OPENID_USE_END_SESSION_ENDPOINT` | Use OpenID Connect end session endpoint for logout. | No | `'true'` or `'false'` |
-| `OPENID_REQUIRED_ROLE_TOKEN_KIND` | Token type to check for roles (access or id_token). | No | `access` |
-| `OPENID_REQUIRED_ROLE_PARAMETER_PATH` | JSON path to roles in the token. | No | `realm_access.roles` |
-| `SOCIAL_LOGIN_ENABLED` | Enable social login integration. | No | `'true'` or `'false'` |
+<section class="hero">
+  <div class="hero-badges">
+    <span class="badge badge-red">OpenShift Exclusive</span>
+    <span class="badge badge-teal">Red Hat UBI 9</span>
+    <span class="badge badge-purple">Chart Verifier Compliant</span>
+  </div>
+  <h1>The Open-Source AI Platform<br>on <span>Red Hat OpenShift</span></h1>
+  <p>Deploy LibreChat with enterprise-grade security, Red Hat certified container images, and native integration with OpenShift AI inference services.</p>
+  <div class="hero-buttons">
+    <a href="#quickstart" class="btn btn-primary">Get Started</a>
+    <a href="https://github.com/maximilianoPizarro/librechat" class="btn btn-outline">View on GitHub</a>
+    <a href="https://artifacthub.io/packages/helm/librechat/librechat" class="btn btn-outline">Artifact Hub</a>
+  </div>
+</section>
 
-**Example OpenID Connect Configuration:**
+<section class="section" id="features">
+  <h2>Built for <span>OpenShift</span></h2>
+  <p class="subtitle">Enterprise-ready AI chat platform with Red Hat certified components</p>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon card-icon-red">🏗️</div>
+      <h3>Red Hat UBI 9 Runtime</h3>
+      <p>Container image built on <code>ubi9/nodejs-20-minimal</code> from the official Red Hat registry. Compliant with restricted Security Context Constraints.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-blue">🤖</div>
+      <h3>OpenShift AI Integration</h3>
+      <p>Built-in LiteLLM proxy connects to vLLM/KServe InferenceServices. Access Granite, Qwen, Nemotron and any model served in your cluster.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-teal">🔒</div>
+      <h3>Restricted SCC Compatible</h3>
+      <p>Runs with <code>restricted</code> SCC out of the box. No privilege escalation, random UIDs, dropped capabilities. Developer Sandbox ready.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-purple">🔌</div>
+      <h3>MCP &amp; Agents</h3>
+      <p>Model Context Protocol support, AI agents with code interpretation, file handling, and tool calling across any connected model.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-green">📦</div>
+      <h3>Complete Stack</h3>
+      <p>Includes MongoDB, PostgreSQL (pgvector), Meilisearch, RAG API, and optional Ollama. All subcharts configurable via values.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-red">✅</div>
+      <h3>Chart Verifier Compliant</h3>
+      <p>Passes Red Hat Community Helm Chart verification. CI pipeline validates every release with the official chart-verifier tool.</p>
+    </div>
+  </div>
+</section>
 
-```yaml
-librechat:
-  configEnv:
-    OPENID_LOGIN_ENABLED: 'true'
-    OPENID_ISSUER: 'https://auth.redhat.com/realms/librechat'
-    OPENID_CLIENT_ID: 'librechat-client'
-    OPENID_CLIENT_SECRET: 'your-client-secret'
-    OPENID_CALLBACK_URL: /oauth/openid/callback
-    OPENID_SCOPE: openid profile email
-    OPENID_SESSION_SECRET: your-session-secret
-    OPENID_USE_END_SESSION_ENDPOINT: 'true'
-    OPENID_REQUIRED_ROLE_TOKEN_KIND: access
-    OPENID_REQUIRED_ROLE_PARAMETER_PATH: realm_access.roles
-    SOCIAL_LOGIN_ENABLED: 'true'
-```
+<div class="section-alt">
+<section class="section" id="architecture">
+  <h2>Architecture</h2>
+  <p class="subtitle">How LibreChat connects to your OpenShift AI models</p>
+  <div class="arch-box">
+┌─────────────────────────────────────────────────────────────┐
+│                    OpenShift Cluster                         │
+│                                                             │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐  │
+│  │   LibreChat   │───▶│   LiteLLM    │───▶│  vLLM/KServe │  │
+│  │   (UBI 9)     │    │   Proxy      │    │  Models      │  │
+│  │   Port 3080   │    │   Port 4000  │    │  Port 8443   │  │
+│  └──────┬───────┘    └──────────────┘    └──────────────┘  │
+│         │                                                   │
+│    ┌────┴────┐  ┌───────────┐  ┌────────────┐              │
+│    │ MongoDB  │  │ PostgreSQL│  │ Meilisearch│              │
+│    │  27017   │  │ (pgvector)│  │   7700     │              │
+│    └─────────┘  │   5432    │  └────────────┘              │
+│                 └─────┬─────┘                               │
+│                       │                                     │
+│                 ┌─────┴─────┐                               │
+│                 │  RAG API   │                               │
+│                 │   8000     │                               │
+│                 └───────────┘                               │
+└─────────────────────────────────────────────────────────────┘
+  </div>
+</section>
+</div>
 
-### LLM Model Endpoint Configuration
+<section class="section" id="quickstart">
+  <h2>Quick <span>Start</span></h2>
+  <p class="subtitle">Deploy LibreChat on your OpenShift cluster in minutes</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h3>Add the Helm repository</h3>
+<pre>helm repo add librechat https://maximilianopizarro.github.io/librechat/
+helm repo update</pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h3>Install on OpenShift</h3>
+<pre>helm install librechat librechat/librechat</pre>
+        <p>This deploys LibreChat with MongoDB, PostgreSQL, Meilisearch, and RAG API. LiteLLM is disabled by default.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h3>Enable LiteLLM proxy (optional)</h3>
+        <p>To connect LibreChat with vLLM/KServe inference services in your cluster:</p>
+<pre>helm upgrade librechat librechat/librechat \
+  --set litellm.enabled=true \
+  --set litellm.apiKey=$(oc whoami -t) \
+  --set litellm.models[0].name=my-model \
+  --set litellm.models[0].modelId=my-isvc-name \
+  --set litellm.models[0].apiBase=https://my-isvc-predictor.ns.svc.cluster.local:8443/v1</pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">4</div>
+      <div class="step-content">
+        <h3>Access LibreChat</h3>
+<pre>oc get route librechat-librechat -o jsonpath='{.spec.host}'</pre>
+        <p>Open the URL in your browser. Register a new account and start chatting.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-**Important:** Endpoint configuration for LLM models is done in the `librechat.configYamlContent.endpoints` section, not through environment variables. The `configYamlContent` allows you to configure custom endpoints, model settings, file upload limits, rate limits, and other advanced features.
+<div class="section-alt">
+<section class="section" id="sandbox">
+  <h2>Developer <span>Sandbox</span></h2>
+  <p class="subtitle">Free hosted OpenShift environment — no cluster required</p>
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-icon card-icon-red">🚀</div>
+      <h3>One-command deploy</h3>
+      <p>The <code>values-sandbox.yaml</code> file pre-configures everything for the Developer Sandbox: restricted SCC, <code>gp3-csi</code> storage, service links disabled, and LiteLLM enabled with the sandbox shared models.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon card-icon-blue">🧠</div>
+      <h3>Pre-configured AI models</h3>
+      <p>Connects automatically to IBM Granite 3.1 8B, Qwen 3 8B, and NVIDIA Nemotron Nano 9B v2 via LiteLLM proxy. All models run as shared vLLM InferenceServices in the sandbox.</p>
+    </div>
+  </div>
 
-The endpoints section should be configured within `librechat.configYamlContent` in your `values.yaml` file:
+  <h3 style="margin-top:2.5rem;">Deploy on Developer Sandbox</h3>
+  <div class="steps" style="margin-top:1.5rem;">
+    <div class="step">
+      <div class="step-number">1</div>
+      <div class="step-content">
+        <h3>Get a free sandbox</h3>
+        <p>Sign up at <a href="https://developers.redhat.com/developer-sandbox">developers.redhat.com/developer-sandbox</a> and copy your <code>oc login</code> command.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">2</div>
+      <div class="step-content">
+        <h3>Login and install</h3>
+<pre>oc login --token=sha256~YOUR_TOKEN --server=https://api.YOUR_CLUSTER:6443
 
-```yaml
-librechat:
-  configYamlContent: |
-    version: 1.0.3
-    cache: true
-    endpoints:
-      assistants:
-        disableBuilder: false
-        pollIntervalMs: 750
-        timeoutMs: 180000
-        supportedIds: ["asst_supportedAssistantId1", "asst_supportedAssistantId2"]
-      custom:
-        # Ollama (Local/Open Source)
-        - name: "Ollama"
-          apiKey: "${OPENAI_API_KEY}"
-          baseURL: "http://librechat-ollama:11434/v1"
-          models:
-            default: ["llama2"]
-            fetch: true
-          titleConvo: true
-          titleModel: "llama2"
-          summarize: false
-          summaryModel: "llama2"
-        # OpenAI
-        - name: "OpenAI"
-          apiKey: "${OPENAI_API_KEY}"
-          baseURL: "https://api.openai.com/v1"
-          models:
-            default: ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"]
-            fetch: true
-          titleConvo: true
-          titleModel: "gpt-4o"
-          summarize: false
-          summaryModel: "gpt-3.5-turbo"
-```
+helm repo add librechat https://maximilianopizarro.github.io/librechat/
+helm install librechat librechat/librechat \
+  -f values-sandbox.yaml \
+  --set litellm.apiKey=$(oc whoami -t)</pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-number">3</div>
+      <div class="step-content">
+        <h3>Refresh OAuth token</h3>
+        <p>Sandbox OAuth tokens expire after ~24 hours. Refresh with:</p>
+<pre>helm upgrade librechat librechat/librechat \
+  -f values-sandbox.yaml \
+  --set litellm.apiKey=$(oc whoami -t)</pre>
+      </div>
+    </div>
+  </div>
 
-**Endpoint Configuration Parameters:**
+  <h3 style="margin-top:2.5rem;">Sandbox shared models</h3>
+  <table>
+    <thead>
+      <tr><th>Model</th><th>ID</th><th>Endpoint</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>IBM Granite 3.1 8B</strong></td>
+        <td><code>isvc-granite-31-8b-fp8</code></td>
+        <td><code>sandbox-shared-models.svc.cluster.local:8443</code></td>
+      </tr>
+      <tr>
+        <td><strong>Qwen 3 8B</strong></td>
+        <td><code>isvc-qwen3-8b-fp8</code></td>
+        <td><code>sandbox-shared-models.svc.cluster.local:8443</code></td>
+      </tr>
+      <tr>
+        <td><strong>NVIDIA Nemotron Nano 9B v2</strong></td>
+        <td><code>isvc-nemotron-nano-9b-v2-fp8</code></td>
+        <td><code>sandbox-shared-models.svc.cluster.local:8443</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+</div>
 
-| Parameter | Description | Required | Example |
-|---|---|---|---|
-| `name` | Display name for the endpoint. | Yes | `"Ollama"`, `"OpenAI"` |
-| `apiKey` | API key for the endpoint. Can reference environment variables using `${VAR_NAME}`. | Yes | `"${OPENAI_API_KEY}"` |
-| `baseURL` | Base URL for the API endpoint. | Yes | `"http://librechat-ollama:11434/v1"` |
-| `models.default` | Array of default model names to use. | Yes | `["llama2"]`, `["gpt-4o", "gpt-3.5-turbo"]` |
-| `models.fetch` | Whether to fetch available models from the API. | No | `true` or `false` |
-| `titleConvo` | Enable automatic conversation title generation. | No | `true` or `false` |
-| `titleModel` | Model to use for generating conversation titles. | No | `"llama2"`, `"gpt-4o"` |
-| `summarize` | Enable conversation summarization. | No | `true` or `false` |
-| `summaryModel` | Model to use for summarization. | No | `"llama2"`, `"gpt-3.5-turbo"` |
+<section class="section" id="models">
+  <h2>AI Model <span>Configuration</span></h2>
+  <p class="subtitle">Connect to any OpenAI-compatible model endpoint</p>
 
-### Resource Configuration (CPU, Memory and GPU)
-
-You can specify resource requests and limits for LibreChat pods using the `resources` parameter. This is crucial to ensure stability and performance in a shared cluster.
-
-The structure follows the Kubernetes container resource standard.
-
-**Example usage in `values.yaml` for CPU and Memory:**
-
-```yaml
-resources:
-  requests:
-    cpu: "500m"
-    memory: "1Gi"
-  limits:
-    cpu: "1"
-    memory: "2Gi"
-```
-
-**To request GPUs (if the OpenShift cluster is configured with the NVIDIA GPU Operator):**
-
-```yaml
-resources:
-  limits:
-    nvidia.com/gpu: 1
-```
-
-### Configuring Ingress in Kubernetes
-
-If you are deploying on a standard Kubernetes cluster (not OpenShift) or prefer to use an Ingress instead of an OpenShift Route, enable `ingress.enabled` and configure the relevant Ingress parameters (host, TLS, etc.) according to your needs.
-
-**Example:**
-
-```yaml
-route:
+  <h3>LiteLLM Proxy (recommended for OpenShift)</h3>
+  <p>LiteLLM acts as an OpenAI-compatible proxy between LibreChat and your vLLM/KServe InferenceServices. It handles authentication, SSL, and model routing.</p>
+<pre>litellm:
   enabled: true
-  host: "librechat.apps.mycluster.example.com"
-```
+  masterKey: "sk-litellm-1234"
+  apiKey: "$(oc whoami -t)"    # OAuth token for KServe auth
+  models:
+    - name: granite-3.1-8b
+      modelId: isvc-granite-31-8b-fp8
+      apiBase: "https://isvc-predictor.namespace.svc.cluster.local:8443/v1"</pre>
 
-**Example:**
+  <h3 style="margin-top:2.5rem;">Cluster with ServiceAccount token</h3>
+  <p>For production clusters where models are secured with OAuth, pass the ServiceAccount token or a long-lived token:</p>
+<pre># Using oc whoami -t (expires ~24h)
+helm install librechat librechat/librechat \
+  --set litellm.enabled=true \
+  --set litellm.apiKey=$(oc whoami -t)
 
-```yaml
-ingress:
+# Using a ServiceAccount token (long-lived)
+SA_TOKEN=$(oc create token my-sa --duration=8760h)
+helm install librechat librechat/librechat \
+  --set litellm.enabled=true \
+  --set litellm.apiKey=$SA_TOKEN</pre>
+
+  <h3 style="margin-top:2.5rem;">Ollama (optional, local models)</h3>
+  <p>For running local models with Ollama. Disabled by default to save resources.</p>
+<pre>ollama:
   enabled: true
-  className: "nginx" 
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-  hosts:
-    - host: librechat.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: librechat-tls
-      hosts:
-        - librechat.example.com
-```
+# Add to librechat.configYamlContent endpoints.custom:
+#   - name: "Ollama"
+#     apiKey: "${OPENAI_API_KEY}"
+#     baseURL: "http://librechat-ollama:11434/v1"
+#     models:
+#       default: ["llama3.2"]
+#       fetch: true</pre>
+</section>
 
-### Secret librechat-librechat-librechat-configenv
+<div class="section-alt">
+<section class="section" id="container">
+  <h2>Container <span>Image</span></h2>
+  <p class="subtitle">Red Hat UBI 9 certified runtime</p>
 
-In this Chart, LibreChat will only work with environment Variables. You can Specify Vars and Secret using an existing Secret (This can be generated by [creating an Env File and converting it to a Kubernetes Secret](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#-em-secret-em-) `--from-env-file`)  
+  <table>
+    <thead>
+      <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Image</strong></td><td><code>quay.io/maximilianopizarro/librechat</code></td></tr>
+      <tr><td><strong>Base</strong></td><td><code>registry.access.redhat.com/ubi9/nodejs-20-minimal</code></td></tr>
+      <tr><td><strong>Source</strong></td><td><code>ghcr.io/danny-avila/librechat:v0.8.4</code></td></tr>
+      <tr><td><strong>Build</strong></td><td>3-stage: extract → rebuild native modules → minimal runtime</td></tr>
+      <tr><td><strong>SCC</strong></td><td>Runs as non-root (UID 1000), <code>restricted</code> SCC compatible</td></tr>
+      <tr><td><strong>CI</strong></td><td>GitHub Actions with <code>redhat-actions/buildah-build</code></td></tr>
+    </tbody>
+  </table>
 
-1. Generate Variables
-Generate `CREDS_KEY`, `JWT_SECRET`, `JWT_REFRESH_SECRET`  and `MEILI_MASTER_KEY`  using `openssl rand -hex 32` and `CREDS_IV` using openssl rand -hex 16.
-place them in a secret like this (If you want to change the secret name, remember to change it in your helm values):
+  <h3 style="margin-top:2rem;">Build locally</h3>
+<pre>podman build -t quay.io/maximilianopizarro/librechat:v0.8.4 \
+  -f container/Containerfile \
+  --build-arg LIBRECHAT_VERSION=v0.8.4 .</pre>
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: librechat-librechat-librechat-configenv
-  namespace: <librechat-chart-namespace>
-type: Opaque
-stringData:
-  CREDS_KEY: <generated value>
-  JWT_SECRET: <generated value>
-  JWT_REFRESH_SECRET: <generated value>
-  MEILI_MASTER_KEY: <generated value>
-```
+  <h3 style="margin-top:2rem;">Run locally</h3>
+<pre>podman run -d --name librechat \
+  -p 3080:3080 \
+  quay.io/maximilianopizarro/librechat:v0.8.4</pre>
+</section>
+</div>
 
-2. Add Credentials to the Secret
-Dependant of the Model you want to use, [create Credentials in your provider](https://docs.librechat.ai/install/configuration/ai_setup.html) and add them to the Secret:
+<section class="section" id="components">
+  <h2>Chart <span>Components</span></h2>
+  <p class="subtitle">Subchart dependencies and versions</p>
+  <table>
+    <thead>
+      <tr><th>Component</th><th>Version</th><th>Condition</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>PostgreSQL</strong></td><td>15.5.38</td><td><code>postgresql.enabled</code></td><td>Bitnami PostgreSQL with pgvector for RAG embeddings</td></tr>
+      <tr><td><strong>MongoDB</strong></td><td>16.5.45</td><td><code>mongodb.enabled</code></td><td>Bitnami MongoDB for LibreChat data storage</td></tr>
+      <tr><td><strong>Ollama</strong></td><td>1.26.0</td><td><code>ollama.enabled</code></td><td>Local LLM inference (disabled by default)</td></tr>
+      <tr><td><strong>Meilisearch</strong></td><td>0.7.0</td><td><code>meilisearch.enabled</code></td><td>Full-text search engine for messages</td></tr>
+      <tr><td><strong>RAG API</strong></td><td>0.5.1</td><td><code>librechat-rag-api.enabled</code></td><td>Retrieval Augmented Generation API</td></tr>
+      <tr><td><strong>LiteLLM</strong></td><td>v1.82.3</td><td><code>litellm.enabled</code></td><td>OpenAI-compatible proxy for vLLM/KServe models</td></tr>
+    </tbody>
+  </table>
+</section>
 
-```yaml
-apiVersion: v1
-kind: Secret
-. . . .
+<div class="section-alt">
+<section class="section" id="verification">
+  <h2>Chart <span>Verification</span></h2>
+  <p class="subtitle">Red Hat Community Helm Chart verification status</p>
 
-  OPENAI_API_KEY: <your secret value>
-```
+  <table>
+    <thead>
+      <tr><th>Check</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>chart-testing/chart-testing</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>has-readme/has-readme</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>contains-test/contains-test</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>has-kubeversion/has-kubeversion</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>not-contains-crds/not-contains-crds</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>helm-lint/helm-lint</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>not-contain-csi-objects/not-contain-csi-objects</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>images-are-certified/images-are-certified</td><td><span class="status status-exempt"> Exempt (non-Red Hat app image)</span></td></tr>
+      <tr><td>contains-values/contains-values</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>contains-values-schema/contains-values-schema</td><td><span class="status status-pass"> Pass</span></td></tr>
+      <tr><td>required-annotations-present/required-annotations-present</td><td><span class="status status-pass"> Pass</span></td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:1rem;color:var(--rh-gray-600);font-size:0.875rem;">Profile: community v1.1 · Chart version: 1.8.16 · CI: <a href="https://github.com/maximilianoPizarro/librechat/actions">GitHub Actions</a></p>
+</section>
+</div>
 
-3. Apply the Secret to the Cluster
+<section class="section" id="release">
+  <h2>Release <span>Notes</span> — v1.8.16</h2>
+  <ul style="list-style:none;padding:0;">
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🏗️ <strong>Red Hat UBI 9 container image</strong> — 3-stage build on <code>ubi9/nodejs-20-minimal</code> pushed to <code>quay.io/maximilianopizarro/librechat</code></li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🤖 <strong>LiteLLM proxy integration</strong> — Built-in OpenAI-compatible proxy for vLLM/KServe InferenceServices</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🧠 <strong>Sandbox shared models</strong> — Pre-configured Granite 3.1 8B, Qwen 3 8B, Nemotron Nano 9B v2</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">📦 <strong>LibreChat v0.8.4</strong> — Latest stable application version with MCP, Agents, and Artifacts</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">✅ <strong>Chart Verifier CI</strong> — GitHub Actions workflow for Red Hat Community chart verification</li>
+    <li style="padding:0.5rem 0;">🔒 <strong>Restricted SCC</strong> — Full compatibility with Developer Sandbox security constraints</li>
+  </ul>
+</section>
 
-4. Fill out values.yaml and apply the Chart to the Cluster
-
-
-### User Image Persistence
-
-The persistent volume for user images (`librechat.imageVolume`) is essential if you expect users to upload images to LibreChat and want them to persist across pod restarts or updates. Adjust `librechat.imageVolume.size` according to the storage space you anticipate needing.
-
-### Deployment of Optional Components
-
-The `librechat-rag-api`, `meilisearch`, `postgresql`, and `mongodb` subcharts are enabled by default to provide a complete LibreChat experience. If you already have external instances of these services or do not need certain functionalities (e.g., RAG or search), you can disable the corresponding subcharts to reduce resource consumption.
-
-**Example (disabling Meilisearch and PostgreSQL if you use external services):**
-
-```yaml
-librechat-rag-api:
-  enabled: false
-meilisearch:
-  enabled: false
-postgresql:
-  enabled: false
-```
-
-# Deployment Strategy
-
-## From Artifact Hub
-
-1. Login with oc login (required cluster-admin scope)
-
-2. Helm add Repo
-
-```bash
-helm repo add librechat-openshift https://maximilianopizarro.github.io/librechat/
-```
-
-3.  Helm install
-
-```bash
-helm install librechat librechat-openshift/librechat --version 1.8.14 -f values.yaml --create-namespace --namespace librechat
-```
-
-## From Helm Chart Source
-
-1. Login with oc login (required cluster-admin scope)
-
-2. Helm package
-
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-helm dependency build
-helm package -u . -d docs
-```
-
-## Helm install
-
-```bash
-helm install librechat docs/librechat-1.8.14.tgz --namespace librechat --create-namespace --set route.host="librechat.apps.rosa.xcr72-yro5x-2iv.vjzc.p3.openshiftapps.com/dashboards"
-```
-
-## Helm uninstall
-
-```bash
-helm uninstall librechat --namespace librechat
-```
-
-# Deployment Strategy ArgoCD
-
-
-```bash
-apiVersion: argoproj.io/v1alpha1
-kind: ApplicationSet
-metadata:
-  name: librechat
-  namespace: openshift-gitops
-spec:
-  generators:
-    - list:
-        elements:
-          - name: librechat
-            namespace: librechat
-            path: librechat
-  template:
-    metadata:
-      name: '{{name}}'
-    spec:
-      project: default
-      source:
-        repoURL: 'https://github.com/maximilianoPizarro/ia-developement-gitops.git'
-        targetRevision: main
-        path: '{{path}}'
-        helm:
-          valueFiles:
-            - helm-values.yaml
-      destination:
-        server: 'https://kubernetes.default.svc'
-        namespace: '{{namespace}}'
-      syncPolicy:
-        automated:
-          selfHeal: true
-          prune: true
-        syncOptions:
-          - CreateNamespace=true
-          - PruneLast=true
-```
-Visite this page for more information 
-https://maximilianopizarro.github.io/ia-developement-gitops/
+<footer class="footer">
+  <div class="footer-links">
+    <a href="https://github.com/maximilianoPizarro/librechat">GitHub</a>
+    <a href="https://artifacthub.io/packages/helm/librechat/librechat">Artifact Hub</a>
+    <a href="https://www.librechat.ai">LibreChat</a>
+    <a href="https://developers.redhat.com/developer-sandbox">Developer Sandbox</a>
+  </div>
+  <p>Built for Red Hat OpenShift · Maintained by <a href="https://github.com/maximilianoPizarro">Maximiliano Pizarro</a> &amp; <a href="#">Carlos Estay</a></p>
+  <p style="margin-top:0.5rem;">© 2026 LibreChat Helm Chart · Apache 2.0 License</p>
+</footer>

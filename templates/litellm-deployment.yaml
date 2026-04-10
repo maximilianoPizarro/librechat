@@ -1,0 +1,86 @@
+{{- if .Values.litellm.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-litellm
+  labels:
+    {{- include "librechat.labels" . | nindent 4 }}
+    app.kubernetes.io/component: litellm
+  annotations:
+    app.openshift.io/runtime: python
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-litellm
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-litellm
+        app.kubernetes.io/component: litellm
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ .Release.Name }}-litellm
+    spec:
+      automountServiceAccountToken: true
+      {{- with .Values.litellm.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: litellm
+          image: "{{ .Values.litellm.image.repository }}:{{ .Values.litellm.image.tag }}"
+          imagePullPolicy: {{ .Values.litellm.image.pullPolicy }}
+          args:
+            - "--config"
+            - "/app/config.yaml"
+            - "--port"
+            - "{{ .Values.litellm.service.port }}"
+            - "--host"
+            - "0.0.0.0"
+          ports:
+            - name: http
+              containerPort: {{ .Values.litellm.service.port }}
+              protocol: TCP
+          env:
+            - name: LITELLM_MASTER_KEY
+              value: {{ .Values.litellm.masterKey | quote }}
+            - name: MODEL_API_KEY
+              value: {{ .Values.litellm.apiKey | quote }}
+            - name: SSL_VERIFY
+              value: "False"
+            - name: LITELLM_SSL_VERIFY
+              value: "False"
+          volumeMounts:
+            - name: config
+              mountPath: /app/config.yaml
+              subPath: config.yaml
+              readOnly: true
+          {{- with .Values.litellm.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.litellm.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: /health/liveliness
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /health/readiness
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-litellm
+{{- end }}

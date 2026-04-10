@@ -25,3 +25,5 @@ meilisearch/
 librechat-rag-api/
 ollama/
 docs/
+container/
+.github/

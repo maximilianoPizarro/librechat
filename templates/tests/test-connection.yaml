@@ -7,9 +7,20 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
+  securityContext:
+    runAsNonRoot: true
+    {{- if not (empty .Values.podSecurityContext) }}
+    {{- toYaml .Values.podSecurityContext | nindent 4 }}
+    {{- end }}
   containers:
     - name: wget
-      image: busybox
-      command: ['wget']
-      args: ['{{ include "librechat.fullname" . }}:{{ .Values.service.port }}']
+      image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+      command: ['curl']
+      args: ['-sSf', 'http://{{ include "librechat.fullname" . }}:{{ .Values.service.port }}/']
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        runAsNonRoot: true
   restartPolicy: Never

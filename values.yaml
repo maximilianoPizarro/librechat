@@ -4,14 +4,17 @@ global:
     existingSecretName: librechat-librechat-secretenv
 image:
   pullPolicy: IfNotPresent
-  registry: ghcr.io
-  repository: danny-avila/librechat
-  tag: 'v0.8.0-rc4'
+  registry: quay.io
+  repository: maximilianopizarro/librechat
+  tag: 'v0.8.4'
 imagePullSecrets: []
+
+enableServiceLinks: true
 
 route:
   enabled: true  
   host: ''
+  sccRoleDisabled: false
 
 ingress:
   annotations: {}
@@ -28,9 +31,6 @@ librechat:
     SEARCH: 'true'
     MEILI_NO_ANALYTICS: 'true'
     MEILI_MASTER_KEY: librechat
-    EMBEDDINGS_PROVIDER: ollama
-    OLLAMA_BASE_URL: http://librechat-ollama:11434/v1
-    EMBEDDINGS_MODEL: nomic-embed-text
     OPENAI_API_KEY: IiI=
     NODE_TLS_REJECT_UNAUTHORIZED: '0'
     CREDS_IV: 118a16ffe26a8712d0adb5b3cf8229ca
@@ -41,7 +41,6 @@ librechat:
     ALLOW_EMAIL_LOGIN: 'true'
     ALLOW_REGISTRATION: 'true'
     ALLOW_SOCIAL_LOGIN: 'true'
-    DOMAIN_SERVER: 'http://0.0.0.0:3080'
     DOMAIN_SERVER: 'http://0.0.0.0:3080'
     OPENID_CALLBACK_URL: /oauth/openid/callback
     OPENID_LOGIN_ENABLED: 'true'
@@ -57,57 +56,59 @@ librechat:
     PLUGIN_MODELS: >-
       gpt-4,gpt-4-turbo-preview,gpt-4-0125-preview,gpt-4-1106-preview,gpt-4-0613,gpt-3.5-turbo,gpt-3.5-turbo-0125,gpt-3.5-turbo-1106,gpt-3.5-turbo-0613,llama-3-1-8b-instruct
   configYamlContent: |
-    version: 1.0.3
+    version: 1.2.1
     cache: true
-    # fileStrategy: "firebase"  # If using Firebase CDN
     fileConfig:
       endpoints:
         assistants:
           fileLimit: 5
-          fileSizeLimit: 10  # Maximum size for an individual file in MB
-          totalSizeLimit: 50  # Maximum total size for all files in a single request in MB
+          fileSizeLimit: 10
+          totalSizeLimit: 50
           supportedMimeTypes:
             - "image/.*"
             - "application/pdf"
+            - "application/vnd.oasis.opendocument.text"
         openAI:
-          disabled: true  # Disables file uploading to the OpenAI endpoint
+          disabled: true
         default:
           totalSizeLimit: 20
-        YourCustomEndpointName:
-          fileLimit: 2
-          fileSizeLimit: 5
-      serverFileSizeLimit: 100  # Global server file size limit in MB
-      avatarSizeLimit: 2  # Limit for user avatar image size in MB
+      serverFileSizeLimit: 100
+      avatarSizeLimit: 2
     rateLimits:
       fileUploads:
         ipMax: 100
-        ipWindowInMinutes: 60  # Rate limit window for file uploads per IP
+        ipWindowInMinutes: 60
         userMax: 50
-        userWindowInMinutes: 60  # Rate limit window for file uploads per user
+        userWindowInMinutes: 60
     #registration:
     #  socialLogins: ["google", "facebook", "github", "discord", "openid"]
     #  allowedDomains:
     #    - "email"
-    #    - ".apps.cluster-26wbn.26wbn.sandbox691.opentlc.com"
+    #    - ".apps.rm2.thpm.p1.openshiftapps.com"
     endpoints:
-      assistants:
-        disableBuilder: false # Disable Assistants Builder Interface by setting to `true`
-        pollIntervalMs: 750  # Polling interval for checking assistant updates
-        timeoutMs: 180000  # Timeout for assistant operations
-        # Should only be one or the other, either `supportedIds` or `excludedIds`
-        supportedIds: ["asst_supportedAssistantId1", "asst_supportedAssistantId2"]
-        # excludedIds: ["asst_excludedAssistantId"]
       custom:
-        - name: "Ollama"
+        # Example: OpenAI-compatible endpoint (LiteLLM, vLLM, Ollama, etc.)
+        - name: "OpenAI"
           apiKey: "${OPENAI_API_KEY}"
-          baseURL: "http://librechat-ollama:11434/v1" # Adjust if Ollama is on a different host
+          baseURL: "https://api.openai.com/v1"
           models:
-            default: ["llama2"] # Example models, fetch from your Ollama instance
+            default: ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"]
             fetch: true
           titleConvo: true
-          titleModel: "llama2"
+          titleModel: "gpt-4o"
           summarize: false
-          summaryModel: "llama2"
+          summaryModel: "gpt-3.5-turbo"
+        # Uncomment to add Ollama (requires ollama.enabled: true)
+        # - name: "Ollama"
+        #   apiKey: "${OPENAI_API_KEY}"
+        #   baseURL: "http://librechat-ollama:11434/v1"
+        #   models:
+        #     default: ["llama3.2"]
+        #     fetch: true
+        #   titleConvo: true
+        #   titleModel: "llama3.2"
+        #   summarize: false
+        #   summaryModel: "llama3.2"
   
   existingConfigYaml: ''
   existingSecretName: librechat-librechat-secretenv
@@ -168,9 +169,73 @@ mongodb:
   extraVolumeMounts:
     - name: datadir
       mountPath: /data/db
+# Ollama is disabled by default. Enable it and add the Ollama endpoint
+# to librechat.configYamlContent.endpoints.custom to use local models.
+# Example:
+#   ollama:
+#     enabled: true
+# Then add to configYamlContent endpoints.custom:
+#   - name: "Ollama"
+#     apiKey: "${OPENAI_API_KEY}"
+#     baseURL: "http://librechat-ollama:11434/v1"
+#     models:
+#       default: ["llama3.2"]
+#       fetch: true
+#     titleConvo: true
+#     titleModel: "llama3.2"
 ollama:
-  enabled: true
+  enabled: false
 
+# LiteLLM proxy for OpenAI-compatible access to vLLM/KServe models.
+# Disabled by default. Enable in sandbox or when proxying to inference services.
+# For OpenShift Developer Sandbox, set litellm.apiKey to $(oc whoami -t)
+# at install/upgrade time since OAuth tokens expire (~24h).
+# Example:
+#   helm upgrade librechat . -f values-sandbox.yaml \
+#     --set litellm.apiKey=$(oc whoami -t)
+litellm:
+  enabled: false
+  image:
+    repository: litellm/litellm-non_root
+    tag: v1.82.3-stable
+    pullPolicy: IfNotPresent
+  service:
+    port: 4000
+  masterKey: "sk-litellm-1234"
+  apiKey: "dummy"
+  models: []
+  # Example models configuration:
+  # models:
+  #   - name: granite-3.1-8b
+  #     modelId: isvc-granite-31-8b-fp8
+  #     apiBase: "https://model-predictor.namespace.svc.cluster.local:8443/v1"
+  #   - name: qwen3-8b
+  #     modelId: isvc-qwen3-8b-fp8
+  #     apiBase: "https://model-predictor.namespace.svc.cluster.local:8443/v1"
+  podSecurityContext: {}
+  securityContext: {}
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+livenessProbe:
+  tcpSocket:
+    port: http
+  initialDelaySeconds: 60
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 5
+readinessProbe:
+  tcpSocket:
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 5
 nameOverride: ''
 nodeSelector: {}
 podAnnotations: {}
