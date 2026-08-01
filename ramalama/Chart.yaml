@@ -1,0 +1,16 @@
+apiVersion: v2
+name: ramalama
+description: Lightweight CPU LLM inference with RamaLama / llama-server (IBM Granite)
+type: application
+version: 0.1.0
+appVersion: "latest"
+home: https://github.com/containers/ramalama
+keywords:
+  - ramalama
+  - granite
+  - llm
+  - cpu
+  - openshift
+maintainers:
+  - name: Maximiliano Pizarro
+    email: mapizarr@redhat.com

@@ -1,0 +1,96 @@
+replicaCount: 1
+
+image:
+  registry: quay.io
+  repository: ramalama/ramalama
+  tag: latest
+  pullPolicy: IfNotPresent
+
+# Small IBM Granite GGUF for CPU inference (~1B Q4). Override model.url to change.
+model:
+  name: granite-3.1-1b
+  # Public Hugging Face resolve URL (Q4_K_M ~0.9Gi)
+  url: https://huggingface.co/bartowski/ibm-granite_granite-3.1-1B-A400M-Instruct-GGUF/resolve/main/ibm-granite_granite-3.1-1B-A400M-Instruct-Q4_K_M.gguf
+  filename: model.gguf
+
+# Init image used to download the GGUF into the model volume
+downloadImage:
+  registry: registry.access.redhat.com
+  repository: ubi9/ubi-minimal
+  tag: latest
+  pullPolicy: IfNotPresent
+
+nameOverride: ramalama
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+
+# Set true on Developer Sandbox (cannot create SCC Role bindings)
+sccRoleDisabled: false
+
+podSecurityContext: {}
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  runAsNonRoot: true
+
+service:
+  type: ClusterIP
+  port: 8080
+  annotations: {}
+
+persistence:
+  enabled: true
+  size: 5Gi
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce
+
+# When persistence.enabled is false, emptyDir is used for /models
+volumes: []
+volumeMounts: []
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: "2"
+    memory: 4Gi
+
+startupProbe:
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 60
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 5
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+# Extra llama-server args (threads, ctx, etc.)
+extraArgs: []
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

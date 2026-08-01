@@ -8,11 +8,14 @@ dependencies:
 - name: ollama
   repository: file://./ollama
   version: 1.26.0
+- name: ramalama
+  repository: file://./ramalama
+  version: 0.1.0
 - name: meilisearch
   repository: file://./meilisearch
   version: 0.7.0
 - name: librechat-rag-api
   repository: file://./librechat-rag-api
-  version: 0.5.1
-digest: sha256:7da41c1b2782f06e2d7270c1aac815f8e8fb6b783806b3e9b9a0732c2eb97f99
-generated: "2025-11-27T18:23:42.8701783-03:00"
+  version: 0.5.3
+digest: sha256:c12af63a9d3fae0dbbe2edcbdebe8a7bbcb2f25f32e20ebbaac08def9b27352b
+generated: "2026-08-01T13:57:37.0433994-03:00"

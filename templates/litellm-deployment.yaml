@@ -83,22 +83,29 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          startupProbe:
+            httpGet:
+              path: /health/liveliness
+              port: http
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 36
           livenessProbe:
             httpGet:
               path: /health/liveliness
               port: http
-            initialDelaySeconds: 30
-            periodSeconds: 15
+            initialDelaySeconds: 0
+            periodSeconds: 20
             timeoutSeconds: 5
             failureThreshold: 5
           readinessProbe:
             httpGet:
-              path: /health/readiness
+              path: /health/liveliness
               port: http
-            initialDelaySeconds: 15
+            initialDelaySeconds: 0
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 3
+            failureThreshold: 6
       volumes:
         - name: config
           configMap:

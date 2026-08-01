@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ramalama.fullname" . }}
+  labels:
+    {{- include "ramalama.labels" . | nindent 4 }}
+  annotations:
+    app.openshift.io/runtime: python
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ramalama.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "ramalama.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "ramalama.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: download-model
+          image: "{{ .Values.downloadImage.registry }}/{{ .Values.downloadImage.repository }}:{{ .Values.downloadImage.tag }}"
+          imagePullPolicy: {{ .Values.downloadImage.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              set -euo pipefail
+              DEST="/models/{{ .Values.model.filename }}"
+              if [ -f "${DEST}" ] && [ -s "${DEST}" ]; then
+                echo "Model already present at ${DEST}"
+                ls -lh "${DEST}"
+                exit 0
+              fi
+              echo "Downloading {{ .Values.model.name }}..."
+              curl -fL --retry 3 --retry-delay 5 \
+                -o "${DEST}.partial" \
+                "{{ .Values.model.url }}"
+              mv "${DEST}.partial" "${DEST}"
+              ls -lh "${DEST}"
+              echo "Download complete"
+          volumeMounts:
+            - name: models
+              mountPath: /models
+      containers:
+        - name: ramalama
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          command:
+            - llama-server
+          args:
+            - --host
+            - "0.0.0.0"
+            - --port
+            - "{{ .Values.service.port }}"
+            - --model
+            - /models/{{ .Values.model.filename }}
+            - --alias
+            - {{ .Values.model.name | quote }}
+            {{- with .Values.extraArgs }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: models
+              mountPath: /models
+              readOnly: true
+            {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+      volumes:
+        - name: models
+          {{- if .Values.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "ramalama.fullname" . }}-models
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+        {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

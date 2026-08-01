@@ -281,7 +281,7 @@ tr:hover td { background: #f9f9f9; }
     <span class="badge badge-purple">LiteLLM Proxy</span>
   </div>
   <h1>Multi-Model AI Chat<br>for <span>OpenShift</span></h1>
-  <p>A community Helm chart that deploys LibreChat v0.8.5-rc1 as a unified chat interface for your existing inference services — Granite, Qwen, Nemotron, or any vLLM model — on Red Hat UBI 9.</p>
+  <p>A community Helm chart that deploys LibreChat v0.8.7 as a unified chat interface for your existing inference services — Granite, Qwen, Nemotron, or any vLLM model — on Red Hat UBI 9.</p>
   <div class="hero-buttons">
     <a href="#quickstart" class="btn btn-primary">Get Started</a>
     <a href="https://github.com/maximilianoPizarro/librechat" class="btn btn-outline">View on GitHub</a>
@@ -316,7 +316,7 @@ tr:hover td { background: #f9f9f9; }
     <div class="card">
       <div class="card-icon card-icon-green">📦</div>
       <h3>Complete Stack</h3>
-      <p>Includes MongoDB, PostgreSQL (pgvector), Meilisearch, RAG API, and optional Ollama. All subcharts configurable via values.</p>
+      <p>Includes MongoDB, PostgreSQL (pgvector), Meilisearch, RAG API, and optional Ollama or RamaLama (CPU Granite). All subcharts configurable via values.</p>
     </div>
     <div class="card">
       <div class="card-icon card-icon-red">✅</div>
@@ -403,7 +403,7 @@ helm repo update</pre>
     <div class="card">
       <div class="card-icon card-icon-red">🚀</div>
       <h3>One-command deploy</h3>
-      <p>The <code>values-sandbox.yaml</code> file pre-configures everything for the Developer Sandbox: restricted SCC, <code>gp3-csi</code> storage, service links disabled, and LiteLLM enabled with the sandbox shared models.</p>
+      <p>The <code>values-sandbox.yaml</code> file pre-configures everything for the Developer Sandbox: restricted SCC, <code>gp3-csi</code> storage, service links disabled, RAG uploads on <code>emptyDir</code> (random-UID safe), and LiteLLM enabled with the sandbox shared models.</p>
     </div>
     <div class="card">
       <div class="card-icon card-icon-blue">🧠</div>
@@ -516,6 +516,18 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
 #     models:
 #       default: ["llama3.2"]
 #       fetch: true</pre>
+
+  <h3 style="margin-top:2.5rem;">RamaLama (optional, Red Hat CPU Granite)</h3>
+  <p>Lightweight CPU inference with <code>quay.io/ramalama/ramalama</code> (<code>llama-server</code>) and a small IBM Granite GGUF. Disabled by default. On Developer Sandbox, use LiteLLM shared models instead.</p>
+<pre>ramalama:
+  enabled: true
+# Add to librechat.configYamlContent endpoints.custom:
+#   - name: "RamaLama Granite"
+#     apiKey: "not-needed"
+#     baseURL: "http://librechat-ramalama:8080/v1"
+#     models:
+#       default: ["granite-3.1-1b"]
+#       fetch: true</pre>
 </section>
 
 <div class="section-alt">
@@ -530,7 +542,7 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
     <tbody>
       <tr><td><strong>Image</strong></td><td><code>quay.io/maximilianopizarro/librechat</code></td></tr>
       <tr><td><strong>Base</strong></td><td><code>registry.access.redhat.com/ubi9/nodejs-20-minimal</code></td></tr>
-      <tr><td><strong>Source</strong></td><td><code>ghcr.io/danny-avila/librechat:v0.8.5-rc1</code></td></tr>
+      <tr><td><strong>Source</strong></td><td><code>ghcr.io/danny-avila/librechat:v0.8.7</code></td></tr>
       <tr><td><strong>Build</strong></td><td>3-stage: extract → rebuild native modules → minimal runtime</td></tr>
       <tr><td><strong>SCC</strong></td><td>Runs as non-root (UID 1000), <code>restricted</code> SCC compatible</td></tr>
       <tr><td><strong>CI</strong></td><td>GitHub Actions with <code>redhat-actions/buildah-build</code></td></tr>
@@ -538,14 +550,14 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
   </table>
 
   <h3 style="margin-top:2rem;">Build locally</h3>
-<pre>podman build -t quay.io/maximilianopizarro/librechat:v0.8.5-rc1 \
+<pre>podman build -t quay.io/maximilianopizarro/librechat:v0.8.7 \
   -f container/Containerfile \
-  --build-arg LIBRECHAT_VERSION=v0.8.5-rc1 .</pre>
+  --build-arg LIBRECHAT_VERSION=v0.8.7 .</pre>
 
   <h3 style="margin-top:2rem;">Run locally</h3>
 <pre>podman run -d --name librechat \
   -p 3080:3080 \
-  quay.io/maximilianopizarro/librechat:v0.8.5-rc1</pre>
+  quay.io/maximilianopizarro/librechat:v0.8.7</pre>
 </section>
 </div>
 
@@ -560,8 +572,9 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
       <tr><td><strong>PostgreSQL</strong></td><td>15.5.38</td><td><code>postgresql.enabled</code></td><td>Bitnami PostgreSQL with pgvector for RAG embeddings</td></tr>
       <tr><td><strong>MongoDB</strong></td><td>16.5.45</td><td><code>mongodb.enabled</code></td><td>Bitnami MongoDB for LibreChat data storage</td></tr>
       <tr><td><strong>Ollama</strong></td><td>1.26.0</td><td><code>ollama.enabled</code></td><td>Local LLM inference (disabled by default)</td></tr>
+      <tr><td><strong>RamaLama</strong></td><td>0.1.0</td><td><code>ramalama.enabled</code></td><td>Red Hat CPU Granite via <code>llama-server</code> (disabled by default)</td></tr>
       <tr><td><strong>Meilisearch</strong></td><td>0.7.0</td><td><code>meilisearch.enabled</code></td><td>Full-text search engine for messages</td></tr>
-      <tr><td><strong>RAG API</strong></td><td>0.5.1</td><td><code>librechat-rag-api.enabled</code></td><td>Retrieval Augmented Generation API</td></tr>
+      <tr><td><strong>RAG API</strong></td><td>0.5.3</td><td><code>librechat-rag-api.enabled</code></td><td>Retrieval Augmented Generation API (<code>registry.librechat.ai</code>)</td></tr>
       <tr><td><strong>LiteLLM</strong></td><td>v1.82.3</td><td><code>litellm.enabled</code></td><td>OpenAI-compatible proxy for vLLM/KServe models</td></tr>
       <tr><td><strong>MongoDB image</strong></td><td>8.0.20</td><td>—</td><td>Updated from 8.0.13 matching upstream</td></tr>
     </tbody>
@@ -569,15 +582,23 @@ helm install librechat librechat/librechat -f values-sandbox.yaml</pre>
 </section>
 
 <section class="section" id="release">
-  <h2>Release <span>Notes</span> — v1.8.17</h2>
+  <h2>Release <span>Notes</span> — v1.9.0</h2>
   <ul style="list-style:none;padding:0;">
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🚀 <strong>LibreChat v0.8.5-rc1</strong> — Admin Panel, Context Compaction/Summarization, redesigned sidebar and tool call UI</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🛡️ <strong>Admin Panel</strong> — Per-principal config overrides, custom roles and groups, system grants for access control</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🧠 <strong>Context Compaction</strong> — Auto-summarizes long agent conversations to stay within context limits (Config v1.3.8)</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🔌 <strong>MCP improvements</strong> — 3-tier architecture, lazy init, OAuth improvements, domain allowlisting</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">📦 <strong>MongoDB 8.0.20</strong> — Updated from 8.0.13 matching upstream Docker Compose files</li>
-    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">📌 <strong>Pinned Model Specs</strong> — Users can pin favorite model specs for quick access</li>
-    <li style="padding:0.5rem 0;">🏗️ <strong>Red Hat UBI 9</strong> — Container image on <code>ubi9/nodejs-20-minimal</code> with LiteLLM proxy and SA token auth</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🚀 <strong>LibreChat v0.8.7</strong> — Chat projects, context usage gauge, agent skills with GitHub sync, settings redesign, keyboard shortcuts, Code Interpreter</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🧠 <strong>Agent Skills</strong> — Author skills on the fly, GitHub sync, local bundled skills, model-spec scoped skills</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">📊 <strong>Context Usage Gauge</strong> — Real-time window usage, tokens, and optional cost tracking</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🔧 <strong>RAG API 0.5.3</strong> — Registry <code>registry.librechat.ai</code>; optional PVC via <code>persistence.enabled</code></li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🛡️ <strong>Sandbox permissions fix</strong> — RAG <code>/uploads</code> uses <code>emptyDir</code> under restricted SCC (random UID)</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🔌 <strong>enableServiceLinks</strong> — Supported on RAG API deployment; disabled in sandbox values</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">🦙 <strong>RamaLama subchart</strong> — Optional Red Hat CPU Granite (<code>quay.io/ramalama/ramalama</code>); disabled by default; sandbox keeps LiteLLM shared models</li>
+    <li style="padding:0.5rem 0;">🔗 <strong>Upstream</strong> — Claude Fable 5 / GPT-5.5, stronger OpenID/MCP/shared-link controls — see <a href="https://www.librechat.ai/changelog/v0.8.7">changelog</a></li>
+  </ul>
+
+  <h3 style="margin-top:2.5rem;">Previous — v1.8.17</h3>
+  <ul style="list-style:none;padding:0;">
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">LibreChat v0.8.5-rc1 — Admin Panel, Context Compaction/Summarization, redesigned sidebar</li>
+    <li style="padding:0.5rem 0;border-bottom:1px solid var(--rh-gray-200);">MCP 3-tier architecture, MongoDB 8.0.20, pinned model specs</li>
+    <li style="padding:0.5rem 0;">Red Hat UBI 9 container with LiteLLM proxy and SA token auth</li>
   </ul>
 </section>
 

@@ -13,15 +13,15 @@ A community Helm chart that deploys [LibreChat](https://www.librechat.ai/) as a 
 
 **This Helm chart is designed exclusively for Red Hat OpenShift.**
 
-## Key Features (v1.8.17)
+## Key Features (v1.9.0)
 
-- **LibreChat v0.8.5-rc1** — Admin Panel, Context Compaction/Summarization, redesigned UI, MCP improvements
+- **LibreChat v0.8.7** — Chat projects, context usage gauge, agent skills (GitHub sync), settings redesign, Code Interpreter
 - **Red Hat UBI 9 Container Image** — 3-stage build on `ubi9/nodejs-20-minimal` pushed to `quay.io/maximilianopizarro/librechat`
 - **LiteLLM Proxy Integration** — Built-in OpenAI-compatible proxy for vLLM/KServe InferenceServices
-- **Developer Sandbox Ready** — Pre-configured for restricted SCCs, random UIDs, `gp3-csi` storage
+- **Developer Sandbox Ready** — Restricted SCCs, random UIDs, `gp3-csi` storage, RAG uploads via `emptyDir`
 - **OpenShift AI Models** — Connects to IBM Granite 3.1 8B, Qwen 3 8B, NVIDIA Nemotron Nano 9B v2
 - **Chart Verifier Compliant** — CI pipeline validates with Red Hat community chart-verifier
-- **Full Stack** — MongoDB 8.0.20, PostgreSQL (pgvector), Meilisearch, RAG API, optional Ollama
+- **Full Stack** — MongoDB 8.0.20, PostgreSQL (pgvector), Meilisearch, RAG API 0.5.3, optional Ollama
 
 ## Architecture
 
@@ -87,7 +87,7 @@ A Red Hat UBI 9-based container image is available at `quay.io/maximilianopizarr
 |----------|-------|
 | Image | `quay.io/maximilianopizarro/librechat` |
 | Base | `registry.access.redhat.com/ubi9/nodejs-20-minimal` |
-| Source | `ghcr.io/danny-avila/librechat:v0.8.5-rc1` |
+| Source | `ghcr.io/danny-avila/librechat:v0.8.7` |
 | Build | 3-stage: extract → rebuild native modules → minimal runtime |
 | SCC | Runs as non-root (UID 1000), `restricted` SCC compatible |
 | CI | GitHub Actions with `redhat-actions/buildah-build` |
@@ -95,9 +95,9 @@ A Red Hat UBI 9-based container image is available at `quay.io/maximilianopizarr
 ### Build locally
 
 ```bash
-podman build -t quay.io/maximilianopizarro/librechat:v0.8.5-rc1 \
+podman build -t quay.io/maximilianopizarro/librechat:v0.8.7 \
   -f container/Containerfile \
-  --build-arg LIBRECHAT_VERSION=v0.8.5-rc1 .
+  --build-arg LIBRECHAT_VERSION=v0.8.7 .
 ```
 
 ## AI Model Configuration
@@ -173,6 +173,22 @@ ollama:
 #       fetch: true
 ```
 
+### RamaLama (optional, Red Hat CPU Granite)
+
+Lightweight in-cluster CPU inference using [`quay.io/ramalama/ramalama`](https://github.com/containers/ramalama) (`llama-server`) and a small IBM Granite GGUF. **Disabled by default.** On Developer Sandbox, prefer LiteLLM shared models instead.
+
+```yaml
+ramalama:
+  enabled: true
+# Then add to librechat.configYamlContent endpoints.custom:
+#   - name: "RamaLama Granite"
+#     apiKey: "not-needed"
+#     baseURL: "http://librechat-ramalama:8080/v1"
+#     models:
+#       default: ["granite-3.1-1b"]
+#       fetch: true
+```
+
 ## Developer Sandbox Configuration
 
 | Setting | Value | Reason |
@@ -182,8 +198,11 @@ ollama:
 | `podSecurityContext` | `{}` | No fsGroup (restricted SCC assigns random UID) |
 | `securityContext.runAsNonRoot` | `true` | Required by restricted SCC |
 | `litellm.enabled` | `true` | Connects to sandbox shared models |
-| `ollama.enabled` | `false` | Saves resources; uses LiteLLM models |
+| `ollama.enabled` | `false` | Saves resources; uses LiteLLM shared models |
+| `ramalama.enabled` | `false` | Local CPU Granite not needed; sandbox has shared models |
 | `*.persistence.storageClass` | `gp3-csi` | Sandbox default StorageClass |
+| `librechat-rag-api.persistence.enabled` | `false` | Avoids PVC permission issues under random UIDs |
+| `librechat-rag-api.volumes` | `emptyDir` | Writable `/uploads` for restricted SCC |
 
 ## Chart Components
 
@@ -192,9 +211,21 @@ ollama:
 | PostgreSQL (Bitnami) | 15.5.38 | Enabled | PostgreSQL with pgvector for RAG embeddings |
 | MongoDB (Bitnami) | 16.5.45 | Enabled | Application data storage (mongo:8.0.20) |
 | Ollama | 1.26.0 | **Disabled** | Local LLM inference |
+| RamaLama | 0.1.0 | **Disabled** | Red Hat CPU Granite via `llama-server` (OpenAI-compatible) |
 | Meilisearch | 0.7.0 | Enabled | Full-text search engine |
-| RAG API | 0.5.1 | Enabled | Retrieval Augmented Generation |
+| RAG API | 0.5.3 | Enabled | Retrieval Augmented Generation (`registry.librechat.ai`) |
 | LiteLLM | v1.82.3 | **Disabled** | OpenAI-compatible proxy for vLLM/KServe |
+
+## Release Notes — v1.9.0
+
+- **LibreChat v0.8.7** — Chat projects, context usage gauge, agent skills with GitHub sync, settings redesign, keyboard shortcuts, pinned conversations, Code Interpreter
+- **RAG API 0.5.3** — Image registry moved to `registry.librechat.ai`; optional PVC via `persistence.enabled`
+- **Sandbox permissions fix** — RAG `/uploads` uses `emptyDir` under restricted SCC (random UID); no more PVC write failures
+- **enableServiceLinks** — Supported on the RAG API deployment (disabled in sandbox)
+- **RamaLama subchart** — Optional Red Hat CPU Granite (`llama-server`); disabled by default; sandbox uses LiteLLM shared models
+- **Upstream highlights** — Claude Fable 5 / GPT-5.5 model support, stronger OpenID/MCP/shared-link access controls, bundled Admin Panel
+
+See the [upstream changelog](https://www.librechat.ai/changelog/v0.8.7) for the full LibreChat v0.8.7 feature list.
 
 ## Chart Verification
 

@@ -4,4 +4,4 @@ description: A Helm chart for LibreChat
 home: https://blue-atlas.de
 name: librechat-rag-api
 type: application
-version: 0.5.1
+version: 0.5.3

@@ -6,7 +6,7 @@ image:
   pullPolicy: IfNotPresent
   registry: quay.io
   repository: maximilianopizarro/librechat
-  tag: 'v0.8.5-rc1'
+  tag: 'v0.8.7'
 imagePullSecrets: []
 
 enableServiceLinks: true
@@ -113,6 +113,17 @@ librechat:
         #   titleModel: "llama3.2"
         #   summarize: false
         #   summaryModel: "llama3.2"
+        # Uncomment to add RamaLama Granite CPU (requires ramalama.enabled: true)
+        # - name: "RamaLama Granite"
+        #   apiKey: "not-needed"
+        #   baseURL: "http://librechat-ramalama:8080/v1"
+        #   models:
+        #     default: ["granite-3.1-1b"]
+        #     fetch: true
+        #   titleConvo: true
+        #   titleModel: "granite-3.1-1b"
+        #   summarize: false
+        #   summaryModel: "granite-3.1-1b"
   
   existingConfigYaml: ''
   existingSecretName: librechat-librechat-secretenv
@@ -190,6 +201,22 @@ mongodb:
 ollama:
   enabled: false
 
+# RamaLama (Red Hat) — optional local CPU Granite via llama-server.
+# Disabled by default. Enable and uncomment the RamaLama endpoint in
+# librechat.configYamlContent.endpoints.custom to use it.
+# Example:
+#   ramalama:
+#     enabled: true
+# Then add to configYamlContent endpoints.custom:
+#   - name: "RamaLama Granite"
+#     apiKey: "not-needed"
+#     baseURL: "http://librechat-ramalama:8080/v1"
+#     models:
+#       default: ["granite-3.1-1b"]
+#       fetch: true
+ramalama:
+  enabled: false
+
 # LiteLLM proxy for OpenAI-compatible access to vLLM/KServe models.
 # Disabled by default. Enable in sandbox or when proxying to inference services.
 # For OpenShift Developer Sandbox, set litellm.apiKey to $(oc whoami -t)
@@ -233,20 +260,29 @@ litellm:
       cpu: "1"
       memory: 2Gi
 
-livenessProbe:
-  tcpSocket:
+startupProbe:
+  httpGet:
+    path: /livez
     port: http
-  initialDelaySeconds: 60
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 36
+livenessProbe:
+  httpGet:
+    path: /livez
+    port: http
+  initialDelaySeconds: 0
   periodSeconds: 20
   timeoutSeconds: 5
   failureThreshold: 5
 readinessProbe:
-  tcpSocket:
+  httpGet:
+    path: /readyz
     port: http
-  initialDelaySeconds: 30
+  initialDelaySeconds: 0
   periodSeconds: 10
   timeoutSeconds: 5
-  failureThreshold: 5
+  failureThreshold: 6
 nameOverride: ''
 nodeSelector: {}
 podAnnotations: {}

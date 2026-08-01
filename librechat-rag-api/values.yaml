@@ -4,7 +4,7 @@ global:
     existingSecretName: librechat-librechat-secretenv
 image:
   pullPolicy: IfNotPresent
-  registry: ghcr.io
+  registry: registry.librechat.ai
   repository: danny-avila/librechat-rag-api-dev-lite
   tag: latest
 imagePullSecrets: []
@@ -13,12 +13,18 @@ nodeSelector: {}
 podAnnotations: {}
 podLabels: {}
 podSecurityContext: {}
+enableServiceLinks: true
+persistence:
+  enabled: true
+  size: 1Gi
+  storageClassName: ""
 postgresql:
   auth:
     database: librechat-vectordb
     username: postgres
     password: postgres 
 rag:
+  replicaCount: 1
   configEnv:
     DB_PORT: '5432'
     EMBEDDINGS_PROVIDER: openai
@@ -35,10 +41,42 @@ serviceAccount:
   create: true
   name: 'librechat-sa'
 tolerations: []
+
+# Wait for PostgreSQL before starting (avoids crash loops when DB is not ready yet)
+waitForPostgresql:
+  enabled: true
+  image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+  imagePullPolicy: IfNotPresent
+  timeoutSeconds: 300
+
+startupProbe:
+  httpGet:
+    path: /health
+    port: http
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 36
+livenessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 5
+readinessProbe:
+  httpGet:
+    path: /health
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
 volumeMounts:
   - name: librechat-uploads
     mountPath: /uploads/
 volumes: 
   - name: librechat-uploads
     persistentVolumeClaim: 
-      claimName: librechat-rag-api-data 
+      claimName: librechat-rag-api-data

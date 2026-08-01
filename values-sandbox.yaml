@@ -18,7 +18,7 @@ image:
   pullPolicy: IfNotPresent
   registry: quay.io
   repository: maximilianopizarro/librechat
-  tag: 'v0.8.5-rc1'
+  tag: 'v0.8.7'
 
 enableServiceLinks: false
 
@@ -118,27 +118,49 @@ librechat:
         #   titleModel: "llama3.2"
         #   summarize: false
         #   summaryModel: "llama3.2"
+        # Sandbox already uses shared models via LiteLLM. Enable RamaLama only
+        # if you need a local CPU Granite (requires ramalama.enabled: true):
+        # - name: "RamaLama Granite"
+        #   apiKey: "not-needed"
+        #   baseURL: "http://librechat-ramalama:8080/v1"
+        #   models:
+        #     default: ["granite-3.1-1b"]
+        #     fetch: true
+        #   titleConvo: true
+        #   titleModel: "granite-3.1-1b"
+        #   summarize: false
+        #   summaryModel: "granite-3.1-1b"
   imageVolume:
     enabled: true
     accessModes: ReadWriteOnce
     size: 2Gi
     storageClassName: gp3-csi
 
-livenessProbe:
-  tcpSocket:
+startupProbe:
+  httpGet:
+    path: /livez
     port: http
-  initialDelaySeconds: 60
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 36
+
+livenessProbe:
+  httpGet:
+    path: /livez
+    port: http
+  initialDelaySeconds: 0
   periodSeconds: 20
   timeoutSeconds: 5
   failureThreshold: 5
 
 readinessProbe:
-  tcpSocket:
+  httpGet:
+    path: /readyz
     port: http
-  initialDelaySeconds: 30
+  initialDelaySeconds: 0
   periodSeconds: 10
   timeoutSeconds: 5
-  failureThreshold: 5
+  failureThreshold: 6
 
 service:
   type: ClusterIP
@@ -220,11 +242,20 @@ postgresql:
 librechat-rag-api:
   enabled: true
   embeddingsProvider: openai
+  persistence:
+    enabled: false
   rag:
     configEnv:
       DB_PORT: '5432'
       EMBEDDINGS_PROVIDER: openai
       RAG_UPLOAD_DIR: /uploads
+  volumeMounts:
+    - name: librechat-uploads
+      mountPath: /uploads/
+  volumes:
+    - name: librechat-uploads
+      emptyDir: {}
+  enableServiceLinks: false
   podSecurityContext: {}
   securityContext:
     allowPrivilegeEscalation: false
@@ -238,6 +269,21 @@ librechat-rag-api:
 # Enable it and add the Ollama endpoint to configYamlContent to use local models.
 ollama:
   enabled: false
+
+# Sandbox already uses shared models via LiteLLM — keep local CPU runtimes off.
+# Enable only if you need an in-cluster Granite GGUF (ramalama.enabled: true).
+ramalama:
+  enabled: false
+  sccRoleDisabled: true
+  persistence:
+    enabled: false
+  podSecurityContext: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
 
 # LiteLLM proxy for accessing sandbox shared vLLM models.
 # Uses the pod's ServiceAccount token for authentication (auto-refresh).

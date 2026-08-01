@@ -28,10 +28,38 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      {{- if kindIs "bool" .Values.enableServiceLinks }}
+      enableServiceLinks: {{ .Values.enableServiceLinks }}
+      {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- with .Values.serviceAccount.name }}
       serviceAccountName: {{ . }}
+      {{- end }}
+      {{- if .Values.waitForPostgresql.enabled }}
+      initContainers:
+        - name: wait-for-postgresql
+          image: {{ .Values.waitForPostgresql.image | quote }}
+          imagePullPolicy: {{ .Values.waitForPostgresql.imagePullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              HOST="{{ .Release.Name }}-postgresql.{{ .Release.Namespace }}.svc.cluster.local"
+              PORT="{{ .Values.rag.configEnv.DB_PORT | default "5432" }}"
+              TIMEOUT="{{ .Values.waitForPostgresql.timeoutSeconds | default 300 }}"
+              echo "Waiting for PostgreSQL at ${HOST}:${PORT} (timeout ${TIMEOUT}s)..."
+              SECONDS=0
+              until (echo >"/dev/tcp/${HOST}/${PORT}") >/dev/null 2>&1; do
+                if [ "${SECONDS}" -ge "${TIMEOUT}" ]; then
+                  echo "Timed out waiting for PostgreSQL"
+                  exit 1
+                fi
+                sleep 5
+              done
+              echo "PostgreSQL is ready"
       {{- end }}
       containers:
         - name: {{ include "rag.fullname" $ }}-rag
@@ -43,10 +71,18 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- with .Values.startupProbe }}
+          startupProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.livenessProbe }}
           livenessProbe:
-            {{- toYaml .Values.livenessProbe | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.readinessProbe }}
           readinessProbe:
-            {{- toYaml .Values.readinessProbe | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           envFrom:
