@@ -9,6 +9,7 @@ metadata:
 spec:
   securityContext:
     runAsNonRoot: true
+    runAsUser: 1001
     {{- if not (empty .Values.podSecurityContext) }}
     {{- toYaml .Values.podSecurityContext | nindent 4 }}
     {{- end }}
@@ -23,4 +24,5 @@ spec:
           drop:
             - ALL
         runAsNonRoot: true
+        runAsUser: 1001
   restartPolicy: Never

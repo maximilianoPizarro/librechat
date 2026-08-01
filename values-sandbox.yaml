@@ -204,6 +204,8 @@ meilisearch:
     enabled: true
     storageClass: gp3-csi
     size: 2Gi
+  serviceAccount:
+    create: true
   podSecurityContext: {}
   securityContext:
     allowPrivilegeEscalation: false
