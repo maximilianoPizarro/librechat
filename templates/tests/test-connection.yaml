@@ -9,10 +9,6 @@ metadata:
 spec:
   securityContext:
     runAsNonRoot: true
-    runAsUser: 1001
-    {{- if not (empty .Values.podSecurityContext) }}
-    {{- toYaml .Values.podSecurityContext | nindent 4 }}
-    {{- end }}
   containers:
     - name: wget
       image: registry.access.redhat.com/ubi9/ubi-minimal:latest
@@ -24,5 +20,4 @@ spec:
           drop:
             - ALL
         runAsNonRoot: true
-        runAsUser: 1001
   restartPolicy: Never

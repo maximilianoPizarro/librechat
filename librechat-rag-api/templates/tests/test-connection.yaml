@@ -7,9 +7,17 @@ metadata:
   annotations:
     "helm.sh/hook": test
 spec:
+  securityContext:
+    runAsNonRoot: true
   containers:
     - name: wget
-      image: busybox
-      command: ['wget']
-      args: ['{{ include "rag.fullname" . }}:{{ .Values.service.port }}']
+      image: registry.access.redhat.com/ubi9/ubi-minimal:latest
+      command: ['curl']
+      args: ['-sSf', 'http://{{ include "rag.fullname" . }}:{{ .Values.service.port }}/health']
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+            - ALL
+        runAsNonRoot: true
   restartPolicy: Never
