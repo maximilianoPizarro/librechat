@@ -1,20 +1,50 @@
+# values.yaml — LibreChat Helm Chart
+#
+# Ready to deploy on OpenShift Developer Sandbox:
+#   helm install librechat . -n <namespace>
+#
+# Developer Sandbox restrictions (applied by default):
+#   - Restricted SCC (no fsGroup, random UID)
+#   - Cannot create SCC Roles → sccRoleDisabled: true
+#   - enableServiceLinks: false to avoid env-var conflicts
+#   - StorageClass: gp3-csi
+#
+# AI models are served via LiteLLM proxy pointing at the sandbox
+# shared vLLM inference services. Ollama and RamaLama are disabled
+# by default to save resources.
+
 global:
   librechat:
     existingSecretApiKey: OPENAI_API_KEY
     existingSecretName: librechat-librechat-secretenv
+
 image:
   pullPolicy: IfNotPresent
   registry: quay.io
   repository: maximilianopizarro/librechat
   tag: 'v0.8.7'
-imagePullSecrets: []
 
-enableServiceLinks: true
+imagePullSecrets: []
+enableServiceLinks: false
+
+# --- Security (sandbox-safe defaults) ---
+
+podSecurityContext: {}
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+
+# --- Networking ---
 
 route:
-  enabled: true  
+  enabled: true
   host: ''
-  sccRoleDisabled: false
+  sccRoleDisabled: true
 
 ingress:
   annotations: {}
@@ -26,6 +56,14 @@ ingress:
         - path: /
           pathType: ImplementationSpecific
   tls: []
+
+service:
+  annotations: {}
+  port: 3080
+  type: ClusterIP
+
+# --- LibreChat application config ---
+
 librechat:
   configEnv:
     SEARCH: 'true'
@@ -40,36 +78,27 @@ librechat:
     JWT_SECRET: 83096493d70e22561f84191c24f459d72e9b41f4c8657fe43aae8cb9b0fe1fa4
     ALLOW_EMAIL_LOGIN: 'true'
     ALLOW_REGISTRATION: 'true'
-    ALLOW_SOCIAL_LOGIN: 'true'
+    ALLOW_SOCIAL_LOGIN: 'false'
     DOMAIN_SERVER: 'http://0.0.0.0:3080'
-    OPENID_CALLBACK_URL: /oauth/openid/callback
-    OPENID_LOGIN_ENABLED: 'true'
-    OPENID_SESSION_SECRET: sessionsecret
-    OPENID_ISSUER: 'https://auth.redhat.com/realms/librechat'
-    OPENID_USE_END_SESSION_ENDPOINT: 'true'
-    OPENID_CLIENT_ID: client-id
-    OPENID_CLIENT_SECRET: client-secret
-    SOCIAL_LOGIN_ENABLED: 'true'
-    OPENID_SCOPE: openid profile email
-    OPENID_REQUIRED_ROLE_TOKEN_KIND: access
-    OPENID_REQUIRED_ROLE_PARAMETER_PATH: realm_access.roles    
-    PLUGIN_MODELS: >-
-      gpt-4,gpt-4-turbo-preview,gpt-4-0125-preview,gpt-4-1106-preview,gpt-4-0613,gpt-3.5-turbo,gpt-3.5-turbo-0125,gpt-3.5-turbo-1106,gpt-3.5-turbo-0613,llama-3-1-8b-instruct
+    # Uncomment for OpenID Connect / social login:
+    # ALLOW_SOCIAL_LOGIN: 'true'
+    # OPENID_CALLBACK_URL: /oauth/openid/callback
+    # OPENID_LOGIN_ENABLED: 'true'
+    # OPENID_SESSION_SECRET: sessionsecret
+    # OPENID_ISSUER: 'https://auth.redhat.com/realms/librechat'
+    # OPENID_USE_END_SESSION_ENDPOINT: 'true'
+    # OPENID_CLIENT_ID: client-id
+    # OPENID_CLIENT_SECRET: client-secret
+    # SOCIAL_LOGIN_ENABLED: 'true'
+    # OPENID_SCOPE: openid profile email
+    # OPENID_REQUIRED_ROLE_TOKEN_KIND: access
+    # OPENID_REQUIRED_ROLE_PARAMETER_PATH: realm_access.roles
+
   configYamlContent: |
     version: 1.3.8
     cache: true
     fileConfig:
       endpoints:
-        assistants:
-          fileLimit: 5
-          fileSizeLimit: 10
-          totalSizeLimit: 50
-          supportedMimeTypes:
-            - "image/.*"
-            - "application/pdf"
-            - "application/vnd.oasis.opendocument.text"
-        openAI:
-          disabled: true
         default:
           totalSizeLimit: 20
       serverFileSizeLimit: 100
@@ -84,25 +113,42 @@ librechat:
       enabled: true
     mcpSettings:
       allowedDomains: []
-    #registration:
-    #  socialLogins: ["google", "facebook", "github", "discord", "openid"]
-    #  allowedDomains:
-    #    - "email"
-    #    - ".apps.rm2.thpm.p1.openshiftapps.com"
     endpoints:
       custom:
-        # Example: OpenAI-compatible endpoint (LiteLLM, vLLM, Ollama, etc.)
-        - name: "OpenAI"
-          apiKey: "${OPENAI_API_KEY}"
-          baseURL: "https://api.openai.com/v1"
+        # IBM Granite 3.1 8B via LiteLLM proxy
+        - name: "IBM Granite"
+          apiKey: "sk-litellm-1234"
+          baseURL: "http://librechat-litellm:4000/v1"
           models:
-            default: ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"]
+            default: ["granite-3.1-8b"]
             fetch: true
           titleConvo: true
-          titleModel: "gpt-4o"
+          titleModel: "granite-3.1-8b"
           summarize: false
-          summaryModel: "gpt-3.5-turbo"
-        # Uncomment to add Ollama (requires ollama.enabled: true)
+          summaryModel: "granite-3.1-8b"
+        # Qwen 3 8B via LiteLLM proxy
+        - name: "Qwen"
+          apiKey: "sk-litellm-1234"
+          baseURL: "http://librechat-litellm:4000/v1"
+          models:
+            default: ["qwen3-8b"]
+            fetch: true
+          titleConvo: true
+          titleModel: "qwen3-8b"
+          summarize: false
+          summaryModel: "qwen3-8b"
+        # NVIDIA Nemotron Nano 9B v2 via LiteLLM proxy
+        - name: "Nemotron"
+          apiKey: "sk-litellm-1234"
+          baseURL: "http://librechat-litellm:4000/v1"
+          models:
+            default: ["nemotron-nano-9b"]
+            fetch: true
+          titleConvo: true
+          titleModel: "nemotron-nano-9b"
+          summarize: false
+          summaryModel: "nemotron-nano-9b"
+        # Uncomment to add Ollama (requires ollama.enabled: true):
         # - name: "Ollama"
         #   apiKey: "${OPENAI_API_KEY}"
         #   baseURL: "http://librechat-ollama:11434/v1"
@@ -113,7 +159,7 @@ librechat:
         #   titleModel: "llama3.2"
         #   summarize: false
         #   summaryModel: "llama3.2"
-        # Uncomment to add RamaLama Granite CPU (requires ramalama.enabled: true)
+        # Uncomment to add RamaLama Granite CPU (requires ramalama.enabled: true):
         # - name: "RamaLama Granite"
         #   apiKey: "not-needed"
         #   baseURL: "http://librechat-ramalama:8080/v1"
@@ -124,143 +170,17 @@ librechat:
         #   titleModel: "granite-3.1-1b"
         #   summarize: false
         #   summaryModel: "granite-3.1-1b"
-  
+
   existingConfigYaml: ''
   existingSecretName: librechat-librechat-secretenv
   serviceAccountName: librechat-sa
   imageVolume:
+    enabled: true
     accessModes: ReadWriteOnce
-    enabled: true
-    size: 10G
-librechat-rag-api:
-  embeddingsProvider: openai
-  enabled: true
-lifecycle: {}
-meilisearch:
-  auth:
-    existingMasterKeySecret: librechat-librechat-secretenv
-  enabled: true
-  image:
-    tag: v1.7.3
-  persistence:
-    enabled: true
-    storageClass: ''
-  serviceAccount:
-    create: true
-  sccRoleDisabled: true
-postgresql:
-  auth:
-    database: librechat-vectordb
-    username: postgres
-    password: postgres 
-  enabled: true
-  image:
-    registry: ghcr.io
-    repository: bat-bs/bitnami-pgvector
-    tag: pg16
+    size: 2Gi
+    storageClassName: gp3-csi
 
-  primary:
-    initdb:
-      scripts:
-        create-librechat-db.sql: |
-          -- Ensure the database exists
-          CREATE DATABASE "librechat-vectordb" WITH OWNER postgres;
-
-          -- Connect to the new database and create the pgvector extension
-          \c librechat-vectordb
-          CREATE EXTENSION IF NOT EXISTS vector;
-          
-          -- CREATE USER postgres WITH PASSWORD 'postgres';
-          -- GRANT ALL PRIVILEGES ON DATABASE "librechat-vectordb" TO postgres;
-mongodb:
-  image:
-    pullPolicy: IfNotPresent
-    registry: docker.io
-    repository: mongo
-    tag: '8.0.20'
-  auth:
-    enabled: false
-  databases:
-    - LibreChat
-  enabled: true
-  extraVolumeMounts:
-    - name: datadir
-      mountPath: /data/db
-# Ollama is disabled by default. Enable it and add the Ollama endpoint
-# to librechat.configYamlContent.endpoints.custom to use local models.
-# Example:
-#   ollama:
-#     enabled: true
-# Then add to configYamlContent endpoints.custom:
-#   - name: "Ollama"
-#     apiKey: "${OPENAI_API_KEY}"
-#     baseURL: "http://librechat-ollama:11434/v1"
-#     models:
-#       default: ["llama3.2"]
-#       fetch: true
-#     titleConvo: true
-#     titleModel: "llama3.2"
-ollama:
-  enabled: false
-
-# RamaLama (Red Hat) — optional local CPU Granite via llama-server.
-# Disabled by default. Enable and uncomment the RamaLama endpoint in
-# librechat.configYamlContent.endpoints.custom to use it.
-# Example:
-#   ramalama:
-#     enabled: true
-# Then add to configYamlContent endpoints.custom:
-#   - name: "RamaLama Granite"
-#     apiKey: "not-needed"
-#     baseURL: "http://librechat-ramalama:8080/v1"
-#     models:
-#       default: ["granite-3.1-1b"]
-#       fetch: true
-ramalama:
-  enabled: false
-
-# LiteLLM proxy for OpenAI-compatible access to vLLM/KServe models.
-# Disabled by default. Enable in sandbox or when proxying to inference services.
-# For OpenShift Developer Sandbox, set litellm.apiKey to $(oc whoami -t)
-# at install/upgrade time since OAuth tokens expire (~24h).
-# Example:
-#   helm upgrade librechat . -f values-sandbox.yaml \
-#     --set litellm.apiKey=$(oc whoami -t)
-litellm:
-  enabled: false
-  route:
-    enabled: true
-    host: ''
-  image:
-    repository: litellm/litellm-non_root
-    tag: v1.82.3-stable
-    pullPolicy: IfNotPresent
-  service:
-    port: 4000
-  # Default master key for LiteLLM admin API. Change in production.
-  masterKey: "sk-litellm-1234"
-  apiKey: "dummy"
-  # Database URL for LiteLLM admin UI. Uses the chart's PostgreSQL by default.
-  databaseUrl: ""
-  useServiceAccountToken: false
-  models: []
-  # Example models configuration:
-  # models:
-  #   - name: granite-3.1-8b
-  #     modelId: isvc-granite-31-8b-fp8
-  #     apiBase: "https://model-predictor.namespace.svc.cluster.local:8443/v1"
-  #   - name: qwen3-8b
-  #     modelId: isvc-qwen3-8b-fp8
-  #     apiBase: "https://model-predictor.namespace.svc.cluster.local:8443/v1"
-  podSecurityContext: {}
-  securityContext: {}
-  resources:
-    requests:
-      cpu: 200m
-      memory: 512Mi
-    limits:
-      cpu: "1"
-      memory: 2Gi
+# --- Probes ---
 
 startupProbe:
   httpGet:
@@ -269,6 +189,7 @@ startupProbe:
   periodSeconds: 5
   timeoutSeconds: 3
   failureThreshold: 36
+
 livenessProbe:
   httpGet:
     path: /livez
@@ -277,6 +198,7 @@ livenessProbe:
   periodSeconds: 20
   timeoutSeconds: 5
   failureThreshold: 5
+
 readinessProbe:
   httpGet:
     path: /readyz
@@ -285,12 +207,9 @@ readinessProbe:
   periodSeconds: 10
   timeoutSeconds: 5
   failureThreshold: 6
-nameOverride: ''
-nodeSelector: {}
-podAnnotations: {}
-podLabels: {}
-podSecurityContext: {}
-replicaCount: 1
+
+# --- Resources ---
+
 resources:
   requests:
     cpu: "500m"
@@ -298,14 +217,9 @@ resources:
   limits:
     cpu: "1"
     memory: "2Gi"
-securityContext: {}
-service:
-  annotations: {}
-  port: 3080
-  type: ClusterIP
-tolerations: []
-updateStrategy:
-  type: RollingUpdate
+
+# --- Extra volumes (writable dirs required by LibreChat) ---
+
 volumeMounts:
   - name: librechat-data-volume
     mountPath: /app/data
@@ -315,12 +229,188 @@ volumeMounts:
     mountPath: /app/logs
   - name: librechat-api-logs-volume
     mountPath: /app/api/logs
+
 volumes:
   - name: librechat-uploads-volume
-    emptyDir: {} 
+    emptyDir: {}
   - name: librechat-data-volume
-    emptyDir: {} 
+    emptyDir: {}
   - name: librechat-logs-volume
     emptyDir: {}
   - name: librechat-api-logs-volume
     emptyDir: {}
+
+# --- Subcharts ---
+
+mongodb:
+  enabled: true
+  image:
+    pullPolicy: IfNotPresent
+    registry: docker.io
+    repository: mongo
+    tag: '8.0.20'
+  auth:
+    enabled: false
+  databases:
+    - LibreChat
+  podSecurityContext: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+  extraVolumeMounts:
+    - name: datadir
+      mountPath: /data/db
+  persistence:
+    enabled: true
+    storageClass: gp3-csi
+    size: 2Gi
+
+meilisearch:
+  enabled: true
+  auth:
+    existingMasterKeySecret: librechat-librechat-secretenv
+  image:
+    tag: v1.7.3
+  persistence:
+    enabled: true
+    storageClass: gp3-csi
+    size: 2Gi
+  serviceAccount:
+    create: true
+  podSecurityContext: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+  sccRoleDisabled: true
+
+postgresql:
+  enabled: true
+  auth:
+    database: librechat-vectordb
+    username: postgres
+    password: postgres
+  image:
+    registry: ghcr.io
+    repository: bat-bs/bitnami-pgvector
+    tag: pg16
+  primary:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+    persistence:
+      enabled: true
+      storageClass: gp3-csi
+      size: 2Gi
+    initdb:
+      scripts:
+        create-librechat-db.sql: |
+          CREATE DATABASE "librechat-vectordb" WITH OWNER postgres;
+          \c librechat-vectordb
+          CREATE EXTENSION IF NOT EXISTS vector;
+
+librechat-rag-api:
+  enabled: true
+  embeddingsProvider: openai
+  persistence:
+    enabled: false
+  rag:
+    configEnv:
+      DB_PORT: '5432'
+      EMBEDDINGS_PROVIDER: openai
+      RAG_UPLOAD_DIR: /uploads
+  volumeMounts:
+    - name: librechat-uploads
+      mountPath: /uploads/
+  volumes:
+    - name: librechat-uploads
+      emptyDir: {}
+  enableServiceLinks: false
+  podSecurityContext: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+  sccRoleDisabled: true
+
+# Ollama — disabled by default to save resources.
+# Enable and uncomment the Ollama endpoint above.
+ollama:
+  enabled: false
+
+# RamaLama (Red Hat) — optional local CPU Granite via llama-server.
+# Enable and uncomment the RamaLama endpoint above.
+ramalama:
+  enabled: false
+  sccRoleDisabled: true
+  persistence:
+    enabled: false
+  podSecurityContext: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+
+# LiteLLM proxy — routes LibreChat requests to sandbox shared vLLM models.
+# Uses the pod's ServiceAccount token for authentication (auto-refresh).
+litellm:
+  enabled: true
+  route:
+    enabled: true
+    host: ''
+  image:
+    repository: litellm/litellm-non_root
+    tag: v1.82.3-stable
+    pullPolicy: IfNotPresent
+  service:
+    port: 4000
+  masterKey: "sk-litellm-1234"
+  apiKey: "dummy"
+  databaseUrl: ""
+  useServiceAccountToken: true
+  models:
+    - name: granite-3.1-8b
+      modelId: isvc-granite-31-8b-fp8
+      apiBase: "https://isvc-granite-31-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1"
+    - name: qwen3-8b
+      modelId: isvc-qwen3-8b-fp8
+      apiBase: "https://isvc-qwen3-8b-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1"
+    - name: nemotron-nano-9b
+      modelId: isvc-nemotron-nano-9b-v2-fp8
+      apiBase: "https://isvc-nemotron-nano-9b-v2-fp8-predictor.sandbox-shared-models.svc.cluster.local:8443/v1"
+  podSecurityContext: {}
+  securityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+        - ALL
+    runAsNonRoot: true
+  resources:
+    requests:
+      cpu: 200m
+      memory: 512Mi
+    limits:
+      cpu: "1"
+      memory: 2Gi
+
+# --- Misc ---
+
+lifecycle: {}
+nameOverride: ''
+nodeSelector: {}
+podAnnotations: {}
+podLabels: {}
+replicaCount: 1
+tolerations: []
+updateStrategy:
+  type: RollingUpdate
